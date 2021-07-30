@@ -39,7 +39,14 @@ namespace VRCTranscriptMod.VRCTranscribe {
             if(tgt_transform == null) MelonLogger.Msg("CalculateSubtitleTrasform NULL TGT!!");
             Vector3 localHeadPosition = Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
 
-            if(remoteHeadPositionSmooth.sqrMagnitude < 0.001f) {
+            if(
+                // when the position isn't initialized
+                remoteHeadPositionSmooth.sqrMagnitude < 0.001f ||
+
+                // OR when the player has been teleported (over 16 units)
+                (remoteHeadPositionSmooth - tgt_transform.position).sqrMagnitude > (16.0f*16.0f)
+            ) {
+                // don't smooth it
                 remoteHeadPositionSmooth = tgt_transform.position;
             } else {
                 remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, tgt_transform.position, Time.deltaTime);
@@ -88,12 +95,17 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
             textObj.transform.SetParent(subtitleParent.transform);
 
+            textObj.layer = 10;
+            
+            // TODO; one ui occluding another
+
             RectTransform rect = textObj.GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(42, 1);
 
             textMesh.fontSize /= 2.0f;   
             textMesh.autoSizeTextContainer = false;
             textMesh.richText = true;
+            textMesh.enableWordWrapping = false;
 
             textMesh.fontMaterial.shader = Shader.Find("TextMeshPro/Mobile/Distance Field Overlay");
 

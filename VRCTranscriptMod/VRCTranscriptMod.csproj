@@ -583,6 +583,7 @@
     <Compile Include="VRCTranscribe\TranscriptPlayerUi.cs" />
     <Compile Include="VRCTranscribe\TranscriptPlayerOverrides.cs" />
     <Compile Include="VRCTranscribe\TranscriptSession.cs" />
+    <Compile Include="VRCTranscribe\TranscriptSessionDebugger.cs" />
     <Compile Include="VRCTranscribe\USpeakHooker.cs" />
     <Compile Include="VRCTranscriptMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

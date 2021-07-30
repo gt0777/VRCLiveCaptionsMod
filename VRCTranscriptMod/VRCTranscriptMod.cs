@@ -22,6 +22,7 @@ namespace VRCTranscriptMod {
 
             UiManager.Init();
 
+            // TODO: don't crash if model is missing
             model = new Model("C:\\model");
         }
 

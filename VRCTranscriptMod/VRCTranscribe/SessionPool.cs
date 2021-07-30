@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MelonLoader;
+using System;
+using System.Collections.Generic;
 using Vosk;
 using VRChatUtilityKit.Utilities;
 
@@ -37,7 +39,11 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
         public void DeleteAllSessions() {
             foreach(TranscriptSession session in sessions.Values) {
-                session.FullDispose();
+                try {
+                    session.FullDispose();
+                }catch(Exception e) {
+                    MelonLogger.Error("DELETESSSIONS: " + e.ToString());
+                }
             }
 
             sessions.Clear();

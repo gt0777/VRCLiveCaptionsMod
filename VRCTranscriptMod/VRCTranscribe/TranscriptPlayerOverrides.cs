@@ -8,6 +8,7 @@ using VRChatUtilityKit.Utilities;
 
 namespace VRCTranscriptMod.VRCTranscribe {
     class TranscriptPlayerOverrides {
+        // TODO: indicator over player's head that they have subtitles enabled
         private static Dictionary<string, bool> overrides;
 
         public static event Action<string> OnRemovedFromWhitelist;
