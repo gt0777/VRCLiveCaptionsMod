@@ -77,6 +77,8 @@ namespace VRCTranscriptMod.VRCTranscribe {
             if(!buff.readWriteMutex.WaitOne()) return;
             buff.beingTranscribed = true;
             if(!inferrenceMutex.WaitOne()) return;
+
+            bool released_mutex = false;
             try {
 
                 if(rec == null) rec = new VoskRecognizer(model, sample_rate);
@@ -87,6 +89,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 }
                 if(rec.AcceptWaveform(buff.buffer, buff.buffer_head)) {
                     inferrenceMutex.ReleaseMutex();
+                    released_mutex = true;
                     string txt = VoskUtil.extractTextFromResult(rec.Result());
                     active_saying = txt;
 
@@ -94,6 +97,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                     Dispose();
                 } else {
                     inferrenceMutex.ReleaseMutex();
+                    released_mutex = true;
                     string txt = VoskUtil.extractTextFromResult(rec.PartialResult());
                     active_saying = txt;
                 }
@@ -101,6 +105,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 buff.buffer_head = 0;
             } finally {
                 FullText = MakeText();
+                if(!released_mutex) inferrenceMutex.ReleaseMutex();
                 buff.readWriteMutex.ReleaseMutex();
                 buff.beingTranscribed = false;
             }
@@ -113,6 +118,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 disposalInProgress = true;
                 while(!inferrenceMutex.WaitOne()) MelonLogger.Warning("Can't lock inferrenceMutex!!!");
                 rec.Dispose();
+                inferrenceMutex.ReleaseMutex();
                 disposalInProgress = false;
             }
             rec = null;

@@ -13,6 +13,8 @@ namespace VRCTranscriptMod.VRCTranscribe {
         private SessionPool pool;
         private Model model;
 
+        const int blank_samples_len = 12000;
+        private float[] blank_samples = new float[blank_samples_len];
         
 
         public TranscribeWorker(Model model) {
@@ -48,6 +50,10 @@ namespace VRCTranscriptMod.VRCTranscribe {
             VRChatUtilityKit.Ui.UiManager.OnBigMenuClosed += () => {
                 transcriptionPaused = false;
             };
+
+            for(int i=0; i<blank_samples_len; i++) {
+                blank_samples[i] = 0.0f;
+            }
         }
 
 
@@ -98,7 +104,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 float time_now = Utils.GetTime();
 
                 try {
-                    if(time_now - last_session_log > 1.0f) {
+                    if(time_now - last_session_log > 8.0f) {
                         MelonLogger.Msg(pool.GetSessions().Count.ToString() + " sessions");
                         last_session_log = time_now;
                     }
@@ -121,10 +127,17 @@ namespace VRCTranscriptMod.VRCTranscribe {
                             // The player is no longer speaking, remove their session
                             MelonLogger.Msg(Utils.GetUID(session.associated_player) + " Player is no longer speaking, remove");
                             pool.DeleteSession(Utils.GetUID(session.associated_player));
-                        } else if(time_now - session.last_activity > 0.5) {
+                        } else if(time_now - session.last_activity > 1.25) {
                             // Dispose of the vosk recognizer to free memory.
                             //MelonLogger.Msg(Utils.GetUID(session.associated_player) + " Vosk dispose for memory saving");
+
+                            session.EatSamples(blank_samples);
+                            session.RunInferrence();
                             session.Dispose();
+                        } else if(time_now - session.last_activity > 0.33) {
+                            // Feed with blank data to get those last words out of there
+                            session.EatSamples(blank_samples);
+                            session.RunInferrence();
                         }
                     }
                 }catch(System.InvalidOperationException) {
