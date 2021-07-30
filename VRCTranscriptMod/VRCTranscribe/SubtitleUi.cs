@@ -10,6 +10,8 @@ using VRC.SDKBase;
 
 namespace VRCTranscriptMod.VRCTranscribe {
     class SubtitleUi {
+        // TODO: Indicate confidence level?
+
         static GameObject subtitleParent;
         public static void Init() {
             MelonLogger.Msg("Init SubtitleUi");

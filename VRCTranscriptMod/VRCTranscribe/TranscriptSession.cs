@@ -129,8 +129,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 if(rec.AcceptWaveform(buff.buffer, buff.buffer_head)) {
                     inferrenceMutex.ReleaseMutex();
                     released_mutex = true;
-                    MelonLogger.Msg(rec.Result());
-                    string txt = VoskUtil.extractTextFromResult(rec.Result());
+                    string result = rec.Result();
+                    MelonLogger.Msg(result);
+                    string txt = VoskUtil.extractTextFromResult(result);
                     active_saying.Update(txt);
 
                     // Need to delete it, otherwise memory use grows like crazy.
