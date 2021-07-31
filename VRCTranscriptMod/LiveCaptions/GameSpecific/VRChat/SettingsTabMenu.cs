@@ -1,18 +1,10 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Vosk;
 using VRChatUtilityKit.Ui;
-using UnhollowerBaseLib;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using VRChatUtilityKit.Utilities;
-using System.Threading;
+using VRCLiveCaptionsMod.LiveCaptions.TranscriptData;
 
 namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
     // Taken from UnityExplorer
@@ -59,7 +51,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
     class SettingsMenuContents {
         static ToggleButton killswitch;
         static ToggleButton range_transcribe;
-        static ToggleButton autoDispose;
+
+        static ToggleButton filter_words;
+
 
         static Label model_info;
 
@@ -82,11 +76,16 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
                 "rangetranscribetoggle",
                 Settings.AutoTranscribeWhenInRange);
 
-            autoDispose = new ToggleButton(submenu.gameObject, new Vector3(2, 0), "Disposal", "Disabled", (to) => { Settings.autoDispose = to; },
-                "blah auto dispose",
-                "auto dispose?",
-                "disposetoggle",
-                Settings.autoDispose);
+            filter_words = new ToggleButton(submenu.gameObject, new Vector3(2, 0), "Swear filter", "Disabled", 
+                
+                (state) => {
+                    Settings.ProfanityFilterLevel = state ? ProfanityFilter.FilterLevel.ALL : ProfanityFilter.FilterLevel.NONE;
+                },
+                "Enable this option if you want close players to be automatically transcribed, without needing to manually enable each player. This may consume a lot of memory.",
+                "Players close to you will be automatically transcribed.",
+                "rangetranscribetoggle",
+                Settings.ProfanityFilterLevel == ProfanityFilter.FilterLevel.ALL);
+
 
             // TODO: increase/decrease size buttons
 

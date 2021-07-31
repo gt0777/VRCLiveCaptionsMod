@@ -78,7 +78,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
                 }
             }
 
-            FullText = full;
+            FullText = ProfanityFilter.FilterString(full, Settings.ProfanityFilterLevel);
         }
     }
 }

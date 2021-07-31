@@ -44,11 +44,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
 
             recognizer = GameUtils.GetVoiceRecognizer();
-            recognizer.Init(this.sample_rate);
+            if(recognizer != null) recognizer.Init(this.sample_rate);
 
             VoiceRecognizerEvents.VoiceRecognizerChanged += () => {
                 if(!inferrenceMutex.WaitOne()) return;
                 try {
+                    CommitSaying();
                     recognizer = GameUtils.GetVoiceRecognizer();
                     if(recognizer != null) recognizer.Init(this.sample_rate);
                 } finally {

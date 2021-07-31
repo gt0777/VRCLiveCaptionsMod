@@ -550,8 +550,10 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\EnableDisableListener.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Components\EnableDisableListener.cs" />
     <Compile Include="LiveCaptions\TranscriptData\AudioBuffer.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\profanities\Profanities.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\profanities\Slurs.cs" />
     <Compile Include="LiveCaptions\TranscriptData\ProfanityFilter.cs" />
     <Compile Include="LiveCaptions\TranscriptData\Saying.cs" />
     <Compile Include="LiveCaptions\TranscriptData\TextGenerator.cs" />
@@ -560,45 +562,45 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Ui\ElementBase.cs" />
-    <Compile Include="Ui\ElementWithText.cs" />
-    <Compile Include="Ui\Label.cs" />
-    <Compile Include="Ui\QuarterButton.cs" />
-    <Compile Include="Ui\SingleButton.cs" />
-    <Compile Include="Ui\SubMenu.cs" />
-    <Compile Include="Ui\TabButton.cs" />
-    <Compile Include="Ui\ToggleButton.cs" />
-    <Compile Include="Ui\UiManager.cs" />
-    <Compile Include="Utilities\AsyncUtils.cs" />
-    <Compile Include="Utilities\Converters.cs" />
-    <Compile Include="Utilities\CursorUtils.cs" />
-    <Compile Include="Utilities\DataUtils.cs" />
-    <Compile Include="Utilities\Extensions.cs" />
-    <Compile Include="Utilities\NetworkEvents.cs" />
-    <Compile Include="Utilities\SemverVersion.cs" />
-    <Compile Include="Utilities\VRCUtils.cs" />
-    <Compile Include="Utilities\XrefUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ElementBase.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ElementWithText.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\Label.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\QuarterButton.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\SingleButton.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\SubMenu.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\TabButton.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ToggleButton.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\UiManager.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\AsyncUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\Converters.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\CursorUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\DataUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\Extensions.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\NetworkEvents.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\SemverVersion.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\VRCUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\XrefUtils.cs" />
     <Compile Include="LiveCaptions\Utils.cs" />
     <Compile Include="LiveCaptions\Abstract\IGameProvider.cs" />
     <Compile Include="LiveCaptions\Abstract\IVoiceRecognizer.cs" />
-    <Compile Include="Vosk\Model.cs" />
-    <Compile Include="Vosk\SpkModel.cs" />
-    <Compile Include="Vosk\Vosk.cs" />
-    <Compile Include="Vosk\VoskPINVOKE.cs" />
-    <Compile Include="Vosk\VoskRecognizer.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\Vosk\Model.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\Vosk\SpkModel.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\Vosk\Vosk.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\Vosk\VoskPINVOKE.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\Vosk\VoskRecognizer.cs" />
     <Compile Include="LiveCaptions\GameSpecific\GameUtils.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\SettingsTabMenu.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\SettingsTabMenu.cs" />
     <Compile Include="LiveCaptions\SessionPool.cs" />
     <Compile Include="LiveCaptions\Settings.cs" />
     <Compile Include="LiveCaptions\SubtitleUi.cs" />
     <Compile Include="LiveCaptions\TranscribeWorker.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\TranscriptPlayerUi.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\TranscriptPlayerUi.cs" />
     <Compile Include="LiveCaptions\TranscriptPlayerOverrides.cs" />
     <Compile Include="LiveCaptions\TranscriptSession.cs" />
     <Compile Include="LiveCaptions\TranscriptSessionDebugger.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\USpeakHooker.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\USpeakHooker.cs" />
     <Compile Include="LiveCaptions\VoskSpecific\VoskVoiceRecognizer.cs" />
-    <Compile Include="VRCTranscriptMod.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\VRCTranscriptMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -608,21 +610,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="bin\x64\Release\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\libvosk.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\libwinpthread-1.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\libgcc_s_seh-1.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\libstdc++-6.dll" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="LiveCaptions\assets\livecaptionicon.png" />
   </ItemGroup>

@@ -6,7 +6,10 @@ using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
 namespace VRCLiveCaptionsMod.LiveCaptions {
     /// <summary>
-    /// The worker that manages the session pool and sessions
+    /// The worker that manages the session pool and sessions.
+    /// This class runs a background thread that loops through each session
+    /// and acts on them as needed.
+    /// It also hooks into IGameProvider's events
     /// </summary>
     public class TranscribeWorker {
         private Thread bg_thread = null;
@@ -145,12 +148,17 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
             if(pool == null) return;
 
-            foreach(TranscriptSession session in pool.GetSessions()) {
-                try {
-                    session.Update();
-                }catch(Exception e) {
-                    GameUtils.LogError(e.ToString());
+            try {
+                foreach(TranscriptSession session in pool.GetSessions()) {
+                    try {
+                        session.Update();
+                    } catch(Exception e) {
+                        GameUtils.LogError(e.ToString());
+                    }
                 }
+            } catch(System.InvalidOperationException) {
+                // session has been added or removed, so ignore this
+
             }
         }
     }

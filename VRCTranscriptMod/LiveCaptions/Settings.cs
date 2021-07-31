@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using Vosk;
+using VRCLiveCaptionsMod.LiveCaptions.TranscriptData;
 
 namespace VRCLiveCaptionsMod.LiveCaptions {
     class Settings {
@@ -52,7 +53,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
         }
 
-        public static bool autoDispose = true;
+        public static ProfanityFilter.FilterLevel ProfanityFilterLevel = ProfanityFilter.FilterLevel.ALL;
+
 
         private static void loadNewModel() {
             Vosk_model = null;
