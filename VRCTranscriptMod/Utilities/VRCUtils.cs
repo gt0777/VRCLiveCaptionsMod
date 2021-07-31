@@ -9,6 +9,7 @@ using VRC;
 using VRC.Core;
 using VRC.Management;
 using VRC.UI;
+using VRCLiveCaptionsMod;
 
 namespace VRChatUtilityKit.Utilities
 {

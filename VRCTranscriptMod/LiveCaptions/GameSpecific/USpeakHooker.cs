@@ -5,7 +5,7 @@ using HarmonyLib;
 using MelonLoader;
 
 
-namespace VRCTranscriptMod.VRCTranscribe {
+namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
     class USpeakHooker {
         public static event Action<VRCPlayer, float[], int> OnRawAudio;
         
@@ -42,7 +42,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 return false;
             }
 
-            VRCTranscriptMod.Instance.HarmonyInstance.Patch(decompressedAudioReceiver, postfix: 
+            VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(decompressedAudioReceiver, postfix: 
                 new HarmonyMethod(typeof(USpeakHooker).GetMethod(nameof(onDecompressedAudio), BindingFlags.NonPublic | BindingFlags.Static)));
 
             return true;

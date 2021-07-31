@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1585
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCTranscriptMod", "VRCTranscriptMod\VRCTranscriptMod.csproj", "{121A501E-42D7-491C-AB13-225B600913DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCLiveCaptionsMod", "VRCTranscriptMod\VRCLiveCaptionsMod.csproj", "{121A501E-42D7-491C-AB13-225B600913DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

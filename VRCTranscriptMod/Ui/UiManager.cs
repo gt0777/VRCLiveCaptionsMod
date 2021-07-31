@@ -11,6 +11,7 @@ using VRC;
 using VRC.Core;
 using VRC.UI;
 using VRChatUtilityKit.Utilities;
+using VRCLiveCaptionsMod;
 
 using UnhollowerRuntimeLib.XrefScans;
 
@@ -171,9 +172,9 @@ namespace VRChatUtilityKit.Ui
             _closeQuickMenu = typeof(QuickMenu).GetMethods()
                 .First(mb => mb.Name.StartsWith("Method_Public_Void_Boolean_") && mb.Name.Length <= 29 && XrefUtils.CheckUsedBy(mb, _setQuickMenuIndex.Name));
 
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_openQuickMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuOpen), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_closeQuickMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuClose), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_setQuickMenuIndex, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuIndexAssigned), BindingFlags.NonPublic | BindingFlags.Static)), null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuIndexAssignedErrorSuppressor), BindingFlags.NonPublic | BindingFlags.Static)), null);
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_openQuickMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuOpen), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_closeQuickMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuClose), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_setQuickMenuIndex, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuIndexAssigned), BindingFlags.NonPublic | BindingFlags.Static)), null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnQuickMenuIndexAssignedErrorSuppressor), BindingFlags.NonPublic | BindingFlags.Static)), null);
 
             BigMenuIndexEnum = quickMenuNestedEnums.First(type => type.IsEnum && type != QuickMenuIndexEnum);
             _closeBigMenu = typeof(VRCUiManager).GetMethods()
@@ -194,14 +195,14 @@ namespace VRChatUtilityKit.Ui
 
             MethodInfo _placeUiAfterPause = typeof(QuickMenu).GetNestedTypes().First(type => type.Name.Contains("IEnumerator")).GetMethod("MoveNext");
 
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_openBigMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnBigMenuOpen), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_closeBigMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnBigMenuClose), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(_placeUiAfterPause, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnPlaceUiAfterPause), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(VRCUiManager).GetMethod("Method_Public_Void_String_Boolean_0"), new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnShowScreen), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_openBigMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnBigMenuOpen), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_closeBigMenu, null, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnBigMenuClose), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(_placeUiAfterPause, new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnPlaceUiAfterPause), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(VRCUiManager).GetMethod("Method_Public_Void_String_Boolean_0"), new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnShowScreen), BindingFlags.NonPublic | BindingFlags.Static)));
 
             foreach (MethodInfo method in typeof(MenuController).GetMethods().Where(mi => mi.Name.StartsWith("Method_Public_Void_APIUser_") && !mi.Name.Contains("_PDM_")))
-                VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(method, postfix: new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnUserInfoOpen), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(AccessTools.Method(typeof(PageUserInfo), "Back"), postfix: new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnUserInfoClose), BindingFlags.NonPublic | BindingFlags.Static)));
+                VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(method, postfix: new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnUserInfoOpen), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(AccessTools.Method(typeof(PageUserInfo), "Back"), postfix: new HarmonyMethod(typeof(UiManager).GetMethod(nameof(OnUserInfoClose), BindingFlags.NonPublic | BindingFlags.Static)));
 
             _quickMenuContextualDisplayEnum = typeof(QuickMenuContextualDisplay).GetNestedTypes()
                 .First(type => type.Name.StartsWith("Enum"));

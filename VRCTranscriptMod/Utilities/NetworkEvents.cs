@@ -8,7 +8,7 @@ using VRC.Core;
 using VRC.Management;
 using VRC.UI;
 
-using VRCTranscriptMod;
+using VRCLiveCaptionsMod;
 using MelonLoader;
 namespace VRChatUtilityKit.Utilities
 {
@@ -184,28 +184,28 @@ namespace VRChatUtilityKit.Utilities
             field0.field_Private_HashSet_1_UnityAction_1_T_0.Add(new Action<Player>((player) => { if (player != null) OnPlayerJoined?.DelegateSafeInvoke(player); }));
             field1.field_Private_HashSet_1_UnityAction_1_T_0.Add(new Action<Player>((player) => { if (player != null) OnPlayerLeft?.DelegateSafeInvoke(player); }));
 
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(APIUser).GetMethod("LocalAddFriend"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnFriend), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(APIUser).GetMethod("UnfriendUser"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnUnfriend), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(RoomManager).GetMethod("Method_Public_Static_Boolean_ApiWorld_ApiWorldInstance_String_Int32_0"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnInstanceChange), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnMasterClientSwitched"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnMasterChange), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnLeftRoom"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnRoomLeave), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnJoinedRoom"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnRoomJoin), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_Boolean_GameObject_String_Single_String_")), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarChange), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_")), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarInstantiate), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(ModerationManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_ApiPlayerModeration_String_String_ModerationType_")), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnPlayerModerationSend), BindingFlags.NonPublic | BindingFlags.Static)));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(ModerationManager).GetMethod("Method_Private_Void_String_ModerationType_0"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnPlayerModerationRemove), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(APIUser).GetMethod("LocalAddFriend"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnFriend), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(APIUser).GetMethod("UnfriendUser"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnUnfriend), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(RoomManager).GetMethod("Method_Public_Static_Boolean_ApiWorld_ApiWorldInstance_String_Int32_0"), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnInstanceChange), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnMasterClientSwitched"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnMasterChange), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnLeftRoom"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnRoomLeave), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(NetworkManager).GetMethod("OnJoinedRoom"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnRoomJoin), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_Boolean_GameObject_String_Single_String_")), null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarChange), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(VRCAvatarManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_Boolean_ApiAvatar_GameObject_")), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarInstantiate), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(ModerationManager).GetMethods().First(mb => mb.Name.StartsWith("Method_Private_ApiPlayerModeration_String_String_ModerationType_")), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnPlayerModerationSend), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(ModerationManager).GetMethod("Method_Private_Void_String_ModerationType_0"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnPlayerModerationRemove), BindingFlags.NonPublic | BindingFlags.Static)));
 
             foreach (MethodInfo method in typeof(AvatarLoadingBar).GetMethods().Where(mb => mb.Name.Contains("Method_Public_Void_Single_Int64_")))
-                VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(method, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarDownloadProgress), BindingFlags.NonPublic | BindingFlags.Static)));
+                VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(method, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnAvatarDownloadProgress), BindingFlags.NonPublic | BindingFlags.Static)));
 
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(typeof(FriendsListManager).GetMethod("Method_Private_Void_String_0"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnUnfriend), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(typeof(FriendsListManager).GetMethod("Method_Private_Void_String_0"), new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnUnfriend), BindingFlags.NonPublic | BindingFlags.Static)));
 
             MethodInfo onSetupFlagsReceivedMethod = typeof(VRCPlayer).GetMethods().First(mi => mi.ReturnType.IsEnum && mi.GetParameters().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(Il2CppSystem.Collections.Hashtable) && XrefUtils.CheckMethod(mi, "Failed to read showSocialRank for {0}"));
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(onSetupFlagsReceivedMethod, null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnSetupFlagsReceive), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(onSetupFlagsReceivedMethod, null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnSetupFlagsReceive), BindingFlags.NonPublic | BindingFlags.Static)));
 
             MethodInfo OnShowSocialRankChangeMethod = typeof(QuickMenu).GetMethods()
                 .First(mi => mi.Name.StartsWith("Method_Public_Void_") && mi.GetParameters().Length == 0 && XrefUtils.CheckUsing(mi, "Method_Public_Static_Void_EnumNPublicSealed", typeof(VRCInputManager))); // && (!mi.Name.EndsWith("1") && !mi.Name.EndsWith("8") && !mi.Name.EndsWith("12") && !mi.Name.EndsWith("17") && !mi.Name.EndsWith("6"))))
-            VRCTranscriptMod.VRCTranscriptMod.Instance.HarmonyInstance.Patch(OnShowSocialRankChangeMethod, null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnShowSocialRankChange), BindingFlags.NonPublic | BindingFlags.Static)));
+            VRCLiveCaptionsMod.VRCLiveCaptionsModMain.Instance.HarmonyInstance.Patch(OnShowSocialRankChangeMethod, null, new HarmonyMethod(typeof(NetworkEvents).GetMethod(nameof(OnShowSocialRankChange), BindingFlags.NonPublic | BindingFlags.Static)));
         }
     }
 }

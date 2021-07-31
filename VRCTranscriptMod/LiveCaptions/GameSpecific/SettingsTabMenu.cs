@@ -14,7 +14,8 @@ using System.Runtime.InteropServices;
 using VRChatUtilityKit.Utilities;
 using System.Threading;
 
-namespace VRCTranscriptMod.VRCTranscribe {
+namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
+    // Taken from UnityExplorer
     public static class ICallHelper {
         private static readonly Dictionary<string, Delegate> iCallCache = new Dictionary<string, Delegate>();
 
@@ -38,6 +39,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
         public static extern IntPtr il2cpp_resolve_icall([MarshalAs(UnmanagedType.LPStr)] string name);
     }
 
+    // Taken from UnityExplorer
     class SpriteHelper {
         internal delegate IntPtr d_CreateSprite(IntPtr texture, ref Rect rect, ref Vector2 pivot, float pixelsPerUnit,
     uint extrude, int meshType, ref Vector4 border, bool generateFallbackPhysicsShape);
@@ -52,99 +54,6 @@ namespace VRCTranscriptMod.VRCTranscribe {
             else
                 return new Sprite(ptr);
         }
-    }
-
-    class Settings {
-        public static string model_directory = "C:\\models\\";
-        public static float transcribe_range = 6.0f;
-
-        public static Model Vosk_model { get; private set; }
-
-        public static event Action<bool> DisableChanging;
-        public static event Action<bool> TranscribeChanging;
-        public static event Action<Model> ModelChanged;
-        public static event Action<float> TextScaleChanging;
-
-        private static bool _disabled = false;
-        private static bool _autoTranscribeWhenInRange = false;
-        private static string _modelName = "";
-        private static float _textScale = 1.0f;
-
-        public static bool Disabled {
-            get => _disabled;
-            set {
-                if(_disabled != value) DisableChanging?.DelegateSafeInvoke(value);
-                _disabled = value;
-            }
-        }
-
-        public static bool AutoTranscribeWhenInRange {
-            get => _autoTranscribeWhenInRange;
-            set {
-                if(_autoTranscribeWhenInRange != value) TranscribeChanging?.DelegateSafeInvoke(value);
-                _autoTranscribeWhenInRange = value;
-            }
-        }
-
-        private static Thread loader;
-        public static bool Loading { get; private set; }
-        public static string ModelName {
-            get => _modelName;
-            set {
-                if(_modelName != value) {
-                    if(loader == null || !loader.IsAlive) {
-                        _modelName = value;
-                        Loading = true;
-                        loader = new Thread(loadNewModel);
-                        loader.Start();
-                    }
-                }
-            }
-        }
-
-        public static bool autoDispose = true;
-
-        private static void loadNewModel() {
-            MelonLogger.Msg("Loading new model...");
-            Vosk_model = null;
-
-            try {
-                if(Directory.Exists(model_directory + _modelName))
-                {
-                    MelonLogger.Msg("Directory exists...");
-                    Vosk_model = new Model(model_directory + _modelName);
-                    MelonLogger.Msg("Loaded...");
-                } else {
-                    MelonLogger.Warning("Directory doesn't exist " + model_directory + _modelName);
-                }
-            } catch(Exception e) {
-                // failed
-                MelonLogger.Warning("Failed to load model " + model_directory + _modelName + " : " + e.ToString());
-                Vosk_model = null;
-            } finally {
-                MelonLogger.Msg("DelegateSafeInvoke");
-                ModelChanged?.DelegateSafeInvoke(Vosk_model);
-                MelonLogger.Msg("End");
-                Loading = false;
-            }
-        }
-
-        public static float TextScale {
-            get => _textScale;
-            set {
-                if(_textScale != value) TextScaleChanging?.DelegateSafeInvoke(value);
-                _textScale = value;
-            }
-        }
-
-        public static string GetModelPath() {
-            return model_directory + ModelName;
-        }
-
-        public static bool ModelExists() {
-            return Directory.Exists(GetModelPath());
-        }
-
     }
 
     class SettingsMenuContents {
@@ -299,16 +208,13 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
 
         public static Sprite GetSpriteFromResource(System.Drawing.Bitmap resource) {
-            MelonLogger.Msg("Start get ssprite " + resource.ToString());
             MemoryStream ms = new MemoryStream();
             resource.Save(ms, resource.RawFormat);
 
             Texture2D tex = new Texture2D(resource.Width, resource.Height);
             ImageConversion.LoadImage(tex, ms.ToArray());
-
-            MelonLogger.Msg("Call create");
+            
             Sprite sprite = SpriteHelper.CreateSprite(tex, new Rect(0.0f, 0.0f, tex.width*1.0f, tex.height*1.0f), new Vector2(0.5f, 0.5f), 100.0f, 0, Vector4.zero);
-            MelonLogger.Msg("End get ssprite");
             return sprite;
         }
     }

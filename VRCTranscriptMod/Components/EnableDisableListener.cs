@@ -1,7 +1,7 @@
 ﻿using System;
 using UnhollowerBaseLib.Attributes;
 using UnityEngine;
-using VRChatUtilityKit.Utilities;
+using VRCLiveCaptionsMod;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 

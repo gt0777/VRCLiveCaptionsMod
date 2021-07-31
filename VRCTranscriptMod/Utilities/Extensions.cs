@@ -72,28 +72,5 @@ namespace VRChatUtilityKit.Utilities
         {
             return new Vector2(i.x.RoundAmount(nearestFactor), i.y.RoundAmount(nearestFactor));
         }
-
-        /// <summary>
-        /// Safely invokes the given delegate with the given args.
-        /// </summary>
-        /// <param name="delegate">The given delegate</param>
-        /// <param name="args">The params of the delegate</param>
-        public static void DelegateSafeInvoke(this Delegate @delegate, params object[] args)
-        {
-            if (@delegate == null)
-                return;
-
-            foreach (Delegate @delegates in @delegate.GetInvocationList())
-            {
-                try
-                {
-                    @delegates.DynamicInvoke(args);
-                }
-                catch (Exception ex)
-                {
-                    MelonLogger.Error("Error while invoking delegate:\n" + ex.ToString());
-                }
-            }
-        }
     }
 }

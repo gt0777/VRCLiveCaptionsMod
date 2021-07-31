@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VRCTranscriptMod.Properties {
+namespace VRCLiveCaptionsMod.Properties {
     using System;
     
     

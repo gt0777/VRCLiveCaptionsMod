@@ -6,7 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VRCTranscriptMod.VRCTranscribe {
+namespace VRCLiveCaptionsMod.LiveCaptions {
+    /// <summary>
+    /// For debugging TranscriptSession
+    /// </summary>
     class TranscriptSessionDebugger {
         string name;
 

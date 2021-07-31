@@ -6,52 +6,68 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using VRC.SDKBase;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
-namespace VRCTranscriptMod.VRCTranscribe {
+namespace VRCLiveCaptionsMod.LiveCaptions {
+    /// <summary>
+    /// Class for creating the floating subtitle UI over audio sources
+    /// using TextMeshPro
+    /// </summary>
     class SubtitleUi {
-        // TODO: Indicate confidence level?
 
-        static GameObject subtitleParent;
+        /// <summary>
+        /// The parent of all subtitle UIs
+        /// </summary>
+        private static GameObject subtitleParent;
         public static void Init() {
-            MelonLogger.Msg("Init SubtitleUi");
             subtitleParent = new GameObject();
             subtitleParent.name = "SubtitleUI";
             UnityEngine.Object.DontDestroyOnLoad(subtitleParent);
-            subtitleParent.transform.SetParent(GameObject.Find("UserInterface").transform);
+            subtitleParent.transform.SetParent(GameUtils.GetSubtitleUiParent());
         }
 
-        TranscriptSession session;
+        /// <summary>
+        /// The TranscriptSession that this is associated with
+        /// </summary>
+        private TranscriptSession session;
 
         public SubtitleUi(TranscriptSession session) {
             this.session = session;
             InitText();
         }
 
-        TextMeshPro textMesh;
-        TextMeshPro textMeshBg;
-        GameObject textObj;
 
-        Transform tgt_transform;
-        Vector3 remoteHeadPositionSmooth = Vector3.zero;
-        Vector3 forwardDirectionSmooth = Vector3.zero;
+        private TextMeshPro textMesh;
+        private TextMeshPro textMeshBg;
 
+        /// <summary>
+        /// The GameObject that contains textMesh component,
+        /// and one child containing textMeshBg component
+        /// </summary>
+        private GameObject textObj;
+        
+        private Vector3 remoteHeadPositionSmooth = Vector3.zero;
+        private Vector3 forwardDirectionSmooth = Vector3.zero;
 
-        void CalculateSubtitleTransform() {
-            if(tgt_transform == null) MelonLogger.Msg("CalculateSubtitleTrasform NULL TGT!!");
-            Vector3 localHeadPosition = Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
+        /// <summary>
+        /// Updates the position of textObj to match the audio source. 
+        /// Should be called once every frame.
+        /// </summary>
+        private void UpdateSubtitleUiTransform() {
+            Vector3 remoteHeadPosition = session.audioSource.GetPosition();
+            Vector3 localHeadPosition = GameUtils.GetProvider().GetLocalHeadPosition();
 
             if(
                 // when the position isn't initialized
                 remoteHeadPositionSmooth.sqrMagnitude < 0.001f ||
 
                 // OR when the player has been teleported (over 16 units)
-                (remoteHeadPositionSmooth - tgt_transform.position).sqrMagnitude > (16.0f*16.0f)
+                (remoteHeadPositionSmooth - remoteHeadPosition).sqrMagnitude > (16.0f*16.0f)
             ) {
                 // don't smooth it
-                remoteHeadPositionSmooth = tgt_transform.position;
+                remoteHeadPositionSmooth = remoteHeadPosition;
             } else {
-                remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, tgt_transform.position, Time.deltaTime);
+                remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, remoteHeadPosition, Time.deltaTime);
             }
 
             Vector3 forwardDirection = remoteHeadPositionSmooth - localHeadPosition;
@@ -67,9 +83,8 @@ namespace VRCTranscriptMod.VRCTranscribe {
             float dist_fw = -(1.0f / (distance + 1.0f)) + 0.75f;
 
             Quaternion quat = Quaternion.LookRotation(forwardDirectionSmooth);
-            if(quat == null) MelonLogger.Msg("QUAT IS NULL? WTF?");
 
-            Vector3 offset = (quat * Vector3.right) * 0.0f;// + (quat * Vector3.forward) * 0.25f + (quat * Vector3.down) * 0.25f;
+            Vector3 offset = (quat * Vector3.right) * 0.0f;
 
             Vector3 frontVectorFlatPlane = (quat * Vector3.forward);
             frontVectorFlatPlane.Scale(new Vector3(1.0f, 0.0f, 1.0f));
@@ -86,13 +101,12 @@ namespace VRCTranscriptMod.VRCTranscribe {
             textObj.transform.localScale = new Vector3(0.033f, 0.033f, 0.033f) * Settings.TextScale;
         }
 
+        /// <summary>
+        /// Initializes the textObj
+        /// </summary>
         public void InitText() {
-            tgt_transform = session.associated_player.gameObject.transform.Find("AnimationController/HeadAndHandIK/HeadEffector");
-
-            if(tgt_transform == null) MelonLogger.Error("TGT TRANSFORM IS NULL!!!");
-
             textObj = new GameObject();
-            textObj.name = Utils.GetUID(session.associated_player);
+            textObj.name = session.audioSource.GetUID();
             textMesh = textObj.AddComponent<TextMeshPro>();
 
             textObj.transform.SetParent(subtitleParent.transform);
@@ -123,12 +137,17 @@ namespace VRCTranscriptMod.VRCTranscribe {
             textMesh.sortingOrder = 3;
         }
 
+        /// <summary>
+        /// Updates the text and calls for the position to be updated.
+        /// Should be called once every frame.
+        /// </summary>
         public void UpdateText() {
             if(textObj == null) return;
             textMesh.text = session.GetText();
-            textMeshBg.text = "<mark=#000000aa padding=\"10,10,10,10\">" + session.GetText();
-            CalculateSubtitleTransform();
+            textMeshBg.text = "<mark=#000000aa padding=\"10,10,10,10\"><color=#00000000>" + session.GetText();
+            UpdateSubtitleUiTransform();
         }
+
 
         public void Dispose() {
             if(textObj != null) {
@@ -136,6 +155,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 UnityEngine.Object.Destroy(textObj);
                 textObj = null;
             }
+        }
+
+        ~SubtitleUi() {
         }
     }
 }

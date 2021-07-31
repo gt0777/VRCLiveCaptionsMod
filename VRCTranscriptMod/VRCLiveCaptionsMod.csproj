@@ -46,7 +46,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;USE_SHORT</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -551,6 +551,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\EnableDisableListener.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\AudioBuffer.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\ProfanityFilter.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\Saying.cs" />
+    <Compile Include="LiveCaptions\TranscriptData\TextGenerator.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -574,22 +578,26 @@
     <Compile Include="Utilities\SemverVersion.cs" />
     <Compile Include="Utilities\VRCUtils.cs" />
     <Compile Include="Utilities\XrefUtils.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="VoskUtil.cs" />
+    <Compile Include="LiveCaptions\Utils.cs" />
+    <Compile Include="LiveCaptions\Abstract\IGameProvider.cs" />
+    <Compile Include="LiveCaptions\Abstract\IVoiceRecognizer.cs" />
     <Compile Include="Vosk\Model.cs" />
     <Compile Include="Vosk\SpkModel.cs" />
     <Compile Include="Vosk\Vosk.cs" />
     <Compile Include="Vosk\VoskPINVOKE.cs" />
     <Compile Include="Vosk\VoskRecognizer.cs" />
-    <Compile Include="VRCTranscribe\SettingsTabMenu.cs" />
-    <Compile Include="VRCTranscribe\SessionPool.cs" />
-    <Compile Include="VRCTranscribe\SubtitleUi.cs" />
-    <Compile Include="VRCTranscribe\TranscribeWorker.cs" />
-    <Compile Include="VRCTranscribe\TranscriptPlayerUi.cs" />
-    <Compile Include="VRCTranscribe\TranscriptPlayerOverrides.cs" />
-    <Compile Include="VRCTranscribe\TranscriptSession.cs" />
-    <Compile Include="VRCTranscribe\TranscriptSessionDebugger.cs" />
-    <Compile Include="VRCTranscribe\USpeakHooker.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\GameUtils.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\SettingsTabMenu.cs" />
+    <Compile Include="LiveCaptions\SessionPool.cs" />
+    <Compile Include="LiveCaptions\Settings.cs" />
+    <Compile Include="LiveCaptions\SubtitleUi.cs" />
+    <Compile Include="LiveCaptions\TranscribeWorker.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\TranscriptPlayerUi.cs" />
+    <Compile Include="LiveCaptions\TranscriptPlayerOverrides.cs" />
+    <Compile Include="LiveCaptions\TranscriptSession.cs" />
+    <Compile Include="LiveCaptions\TranscriptSessionDebugger.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\USpeakHooker.cs" />
+    <Compile Include="LiveCaptions\VoskSpecific\VoskVoiceRecognizer.cs" />
     <Compile Include="VRCTranscriptMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -616,7 +624,7 @@
     <None Include="Resources\libstdc++-6.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="VRCTranscribe\assets\livecaptionicon.png" />
+    <None Include="LiveCaptions\assets\livecaptionicon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

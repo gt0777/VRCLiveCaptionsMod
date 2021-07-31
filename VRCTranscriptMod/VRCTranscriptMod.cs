@@ -3,14 +3,14 @@ using MelonLoader;
 using UnityEngine;
 using VRChatUtilityKit.Utilities;
 
-using Vosk;
-
 using VRChatUtilityKit.Ui;
-using VRCTranscriptMod.VRCTranscribe;
+using VRCLiveCaptionsMod.LiveCaptions;
+using VRCLiveCaptionsMod.LiveCaptions.VoskSpecific;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
-namespace VRCTranscriptMod {
-    public class VRCTranscriptMod : MelonMod {
-        internal static VRCTranscriptMod Instance { get; private set; }
+namespace VRCLiveCaptionsMod {
+    public class VRCLiveCaptionsModMain : MelonMod {
+        internal static VRCLiveCaptionsModMain Instance { get; private set; }
 
         public override void OnApplicationStart() {
             Instance = this;
@@ -30,12 +30,11 @@ namespace VRCTranscriptMod {
 
             MelonLogger.Msg("UIMan Init");
             NetworkEvents.NetworkInit();
-
-            USpeakHooker.Init();
-            TranscriptPlayerOverrides.Init();
-            TranscriptPlayerUi.Init();
+            
+            AudioSourceOverrides.Init();
             SubtitleUi.Init();
-            SettingsTabMenu.Init();
+
+            GameUtils.Init();
 
             worker = new TranscribeWorker();
 
@@ -46,7 +45,7 @@ namespace VRCTranscriptMod {
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName) {
-            //if(worker != null) worker.CleanAndRestart();
+
         }
 
         private float lastUpdate = 0;

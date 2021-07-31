@@ -6,11 +6,11 @@ using MelonLoader;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("VRCTranscriptMod")]
+[assembly: AssemblyTitle("VRCLiveCaptionsMod")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("VRCTranscriptMod")]
+[assembly: AssemblyProduct("VRCLiveCaptionsMod")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -38,5 +38,5 @@ using MelonLoader;
 
 
 
-[assembly: MelonInfo(typeof(VRCTranscriptMod.VRCTranscriptMod), "VRChat Transcript mod", "1.0.0", "a")]
+[assembly: MelonInfo(typeof(VRCLiveCaptionsMod.VRCLiveCaptionsModMain), "VRChat Live Captions mod", "0.1.0", "a")]
 [assembly: MelonGame("VRChat", "VRChat")]
