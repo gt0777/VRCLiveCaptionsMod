@@ -54,6 +54,7 @@
 
 namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
     public static class Profanities {
+        // Taken from https://github.com/MauriceButler/badwords
         public static readonly string[] words = {
     "ahole",
     "anus",
