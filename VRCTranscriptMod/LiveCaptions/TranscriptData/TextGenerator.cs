@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
     class TextGenerator {
         public string FullText { get; private set; } = "";
+        private string UnfilteredFullText = "";
 
         const int maxLines = 2;
         private float lastTextUpdate = 0.0f;
@@ -78,6 +79,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
                 }
             }
 
+            // Avoid expensive filtering if the text is exactly the same
+            if(full.Equals(UnfilteredFullText)) return;
+
+            UnfilteredFullText = full;
             FullText = ProfanityFilter.FilterString(full, Settings.ProfanityFilterLevel);
         }
     }
