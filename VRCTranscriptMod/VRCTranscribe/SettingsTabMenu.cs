@@ -67,7 +67,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
         private static bool _disabled = false;
         private static bool _autoTranscribeWhenInRange = false;
-        private static string _modelName = "example";
+        private static string _modelName = "";
         private static float _textScale = 1.0f;
 
         public static bool Disabled {
@@ -94,6 +94,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 if(_modelName != value) {
                     if(loader == null || !loader.IsAlive) {
                         _modelName = value;
+                        Loading = true;
                         loader = new Thread(loadNewModel);
                         loader.Start();
                     }
@@ -101,14 +102,18 @@ namespace VRCTranscriptMod.VRCTranscribe {
             }
         }
 
+        public static bool autoDispose = true;
+
         private static void loadNewModel() {
             MelonLogger.Msg("Loading new model...");
-            Loading = true;
             Vosk_model = null;
 
             try {
-                if(Directory.Exists(model_directory + _modelName)) {
+                if(Directory.Exists(model_directory + _modelName))
+                {
+                    MelonLogger.Msg("Directory exists...");
                     Vosk_model = new Model(model_directory + _modelName);
+                    MelonLogger.Msg("Loaded...");
                 } else {
                     MelonLogger.Warning("Directory doesn't exist " + model_directory + _modelName);
                 }
@@ -117,7 +122,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 MelonLogger.Warning("Failed to load model " + model_directory + _modelName + " : " + e.ToString());
                 Vosk_model = null;
             } finally {
+                MelonLogger.Msg("DelegateSafeInvoke");
                 ModelChanged?.DelegateSafeInvoke(Vosk_model);
+                MelonLogger.Msg("End");
                 Loading = false;
             }
         }
@@ -143,6 +150,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
     class SettingsMenuContents {
         static ToggleButton killswitch;
         static ToggleButton range_transcribe;
+        static ToggleButton autoDispose;
 
         static Label model_info;
 
@@ -165,13 +173,22 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 "rangetranscribetoggle",
                 Settings.AutoTranscribeWhenInRange);
 
+            autoDispose = new ToggleButton(submenu.gameObject, new Vector3(2, 0), "Disposal", "Disabled", (to) => { Settings.autoDispose = to; },
+                "blah auto dispose",
+                "auto dispose?",
+                "disposetoggle",
+                Settings.autoDispose);
+
             // TODO: increase/decrease size buttons
 
-            model_info = new Label(submenu.gameObject, new Vector3(2, 0), "", "model_info");
+            model_info = new Label(submenu.gameObject, new Vector3(3, 0), "", "model_info");
 
+            /*
             Settings.ModelChanged += (model) => {
                 Update();
-            };
+            };*/
+
+            Settings.ModelName = "model";
         }
 
         private static void RangeChanged(bool to) {

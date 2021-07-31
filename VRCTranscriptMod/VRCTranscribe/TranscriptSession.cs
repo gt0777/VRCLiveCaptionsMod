@@ -158,22 +158,31 @@ namespace VRCTranscriptMod.VRCTranscribe {
         }
 
 
+        public bool HasWords(){
+            return active_saying != null && active_saying.fullTxt.Length > 0;
+        }
 
-        public void Dispose() {
-            if(rec != null) {
-                disposalInProgress = true;
-                try {
-                    while(!inferrenceMutex.WaitOne()) MelonLogger.Warning("Can't lock inferrenceMutex!!!");
-                    rec.Dispose();
-                } finally {
-                    inferrenceMutex.ReleaseMutex();
+        public void Dispose(bool forced = false) {
+            if (forced || Settings.autoDispose) {
+                if (rec != null)
+                {
+                    disposalInProgress = true;
+                    try
+                    {
+                        while (!inferrenceMutex.WaitOne()) MelonLogger.Warning("Can't lock inferrenceMutex!!!");
+                        rec.Dispose();
+                    }
+                    finally
+                    {
+                        inferrenceMutex.ReleaseMutex();
+                    }
+
+                    debugger.onDispose();
+
+                    disposalInProgress = false;
                 }
-
-                debugger.onDispose();
-
-                disposalInProgress = false;
+                rec = null;
             }
-            rec = null;
 
             if((active_saying != null) && active_saying.fullTxt.Length > 0) {
                 MelonLogger.Msg("Commit : " + active_saying.fullTxt);
@@ -185,7 +194,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
         bool disposed = false;
         public void FullDispose() {
-            Dispose();
+            Dispose(true);
             if(ui != null) ui.Dispose();
             ui = null;
             disposed = true;

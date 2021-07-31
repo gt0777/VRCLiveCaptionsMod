@@ -139,9 +139,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
                                 // Dispose of the vosk recognizer to free memory.
                                 //MelonLogger.Msg(Utils.GetUID(session.associated_player) + " Vosk dispose for memory saving");
 
-                                if(session.IsActive()) {
+                                if(session.IsActive() && session.HasWords()) {
                                     MelonLogger.Msg("Blank sample submit and dispose");
-                                    while(session.IsActive()) {
+                                    while(session.IsActive() && session.HasWords()) {
                                         //MelonLogger.Msg("Submit once");
                                         session.EatSamples(blank_samples);
                                         session.RunInferrence();
