@@ -12,53 +12,31 @@ namespace VRCTranscriptMod.VRCTranscribe {
     class TranscribeWorker {
         private Thread bg_thread;
         private SessionPool pool;
-        private Model model;
 
         const int blank_samples_len = 48000 / 16;
         private float[] blank_samples = new float[blank_samples_len];
         
 
-        public TranscribeWorker(Model model) {
-            this.model = model;
+        public TranscribeWorker() {
             bg_thread = new Thread(run);
 
             USpeakHooker.OnRawAudio += rawAudio;
 
             this.pool = null;
-
-
+            
             bg_thread.Start();
 
-
-
-            // TODO: this sucks, any other way to avoid crash?
-            /*
-            VRChatUtilityKit.Ui.UiManager.OnQuickMenuOpened += () => {
-                transcriptionPaused = true;
-                bg_thread.Abort();
-            };
-
-            VRChatUtilityKit.Ui.UiManager.OnQuickMenuClosed += () => {
-                transcriptionPaused = false;
-            };
-
-            VRChatUtilityKit.Ui.UiManager.OnBigMenuOpened += () => {
-                transcriptionPaused = true;
-                bg_thread.Abort();
-            };
-
-            VRChatUtilityKit.Ui.UiManager.OnBigMenuClosed += () => {
-                transcriptionPaused = false;
-            };
-            */
-
+            
             for(int i=0; i<blank_samples_len; i++) {
                 blank_samples[i] = 0.0f;
             }
 
             VRChatUtilityKit.Utilities.NetworkEvents.OnRoomLeft += () => {
-                MelonLogger.Msg("ROOM LEFT!! ROOM LEFT!!");
                 CleanAndRestart();
+            };
+
+            Settings.DisableChanging += (bool to) => {
+                if(to) CleanAndRestart();
             };
         }
 
@@ -75,16 +53,26 @@ namespace VRCTranscriptMod.VRCTranscribe {
             }
         }
 
+        Vector3 localPosition = Vector3.zero;
+
         private void rawAudio(VRCPlayer ply, float[] samples, int samplerate) {
+            if(Settings.Disabled) return;
             if(ply == null) return;
             if(samplerate < 1000) return;
             if(samples.Length < 4) return;
-            if(!TranscriptPlayerOverrides.IsWhitelisted(Utils.GetUID(ply))) return;
+            if(!TranscriptPlayerOverrides.IsWhitelisted(Utils.GetUID(ply))) {
+                if(!Settings.AutoTranscribeWhenInRange) return;
+                
+            }
+
+            Vector3 remotePlayerPos = ply.gameObject.transform.position;
+            if((remotePlayerPos - localPosition).sqrMagnitude > (Settings.transcribe_range * Settings.transcribe_range)) return;
+
 
 
             if(this.pool == null) {
                 MelonLogger.Msg("Samplerate: " + samplerate.ToString());
-                this.pool = new SessionPool(samplerate, model);
+                this.pool = new SessionPool(samplerate);
             }
 
             if(!bg_thread.IsAlive && !transcriptionPaused) {
@@ -112,7 +100,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 try {
                     while(!inferenceBusyMutex.WaitOne()) MelonLogger.Warning("Unable to grab mutex??");
 
-                    if(transcriptionPaused) continue;
+                    if(transcriptionPaused || Settings.Disabled) continue;
                     if(pool == null) continue;
 
                     float time_now = Utils.GetTime();
@@ -153,9 +141,12 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
                                 if(session.IsActive()) {
                                     MelonLogger.Msg("Blank sample submit and dispose");
-                                    session.EatSamples(blank_samples);
-                                    session.RunInferrence();
-                                    session.Dispose();
+                                    while(session.IsActive()) {
+                                        //MelonLogger.Msg("Submit once");
+                                        session.EatSamples(blank_samples);
+                                        session.RunInferrence();
+                                    }
+                                    //session.Dispose();
                                 }
                             }
                         }
@@ -171,6 +162,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
         }
 
         public void Tick() {
+            if(VRC.SDKBase.Networking.LocalPlayer != null) {
+                localPosition = VRC.SDKBase.Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
+            }
             if(pool == null) return;
 
             foreach(TranscriptSession session in pool.GetSessions()) {

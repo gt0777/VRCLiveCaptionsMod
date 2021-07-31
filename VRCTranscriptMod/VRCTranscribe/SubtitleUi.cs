@@ -83,7 +83,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
             textObj.transform.rotation = finalQuat;
             textObj.transform.position = finalPosition;
-            textObj.transform.localScale = new Vector3(0.033f, 0.033f, 0.033f);
+            textObj.transform.localScale = new Vector3(0.033f, 0.033f, 0.033f) * Settings.TextScale;
         }
 
         public void InitText() {

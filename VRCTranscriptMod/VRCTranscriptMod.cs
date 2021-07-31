@@ -12,8 +12,6 @@ namespace VRCTranscriptMod {
     public class VRCTranscriptMod : MelonMod {
         internal static VRCTranscriptMod Instance { get; private set; }
 
-        Model model;
-
         public override void OnApplicationStart() {
             Instance = this;
 
@@ -21,9 +19,7 @@ namespace VRCTranscriptMod {
             VRCUtils.OnUiManagerInit += OnUiManagerInit;
 
             UiManager.Init();
-
-            // TODO: don't crash if model is missing
-            model = new Model("C:\\model");
+            
         }
 
 
@@ -39,8 +35,10 @@ namespace VRCTranscriptMod {
             TranscriptPlayerOverrides.Init();
             TranscriptPlayerUi.Init();
             SubtitleUi.Init();
+            SettingsTabMenu.Init();
 
-            worker = new TranscribeWorker(model);
+            worker = new TranscribeWorker();
+
         }
 
         public override void OnApplicationQuit() {

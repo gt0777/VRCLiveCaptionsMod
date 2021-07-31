@@ -73,19 +73,34 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
         private TranscriptSessionDebugger debugger;
 
-        public TranscriptSession(Model model, float sample_rate) {
-            this.model = model;
+        public TranscriptSession(float sample_rate) {
             this.sample_rate = sample_rate;
 
             for(int i=0; i<audioBuffers.Length; i++) {
                 audioBuffers[i] = new AudioBuffer();
             }
+
+            model = Settings.Vosk_model;
+            Settings.ModelChanged += (Model new_model) => {
+                model = new_model;
+                Dispose();
+            };
         }
 
         private bool disposalInProgress = false;
 
         private string FullText;
         public void RunInferrence() {
+            if(model == null) {
+                MelonLogger.Warning("Model is null");
+                return;
+            }
+            if(Settings.Disabled) {
+                MelonLogger.Warning("Disabled");
+                return;
+            }
+            if(active_saying != null)
+                if((Utils.GetTime() - active_saying.timeEnd) > sepAge*1.6f) Dispose();
             if(disposalInProgress) {
                 MelonLogger.Warning("RunInferrence called mid-disposal!!");
                 return;
@@ -102,15 +117,6 @@ namespace VRCTranscriptMod.VRCTranscribe {
 
             bool released_mutex = false;
             try {
-
-                Vector3 remotePos = associated_player.gameObject.transform.Find("AnimationController/HeadAndHandIK/HeadEffector").position;
-                Vector3 localPos = Networking.LocalPlayer.GetPosition();
-
-                if((remotePos - localPos).magnitude > 20.0f) {
-                    buff.buffer_head = 0;
-                    return;
-                }
-
                 if(rec == null) rec = new VoskRecognizer(model, sample_rate);
 
                 if(disposalInProgress) {
@@ -148,9 +154,6 @@ namespace VRCTranscriptMod.VRCTranscribe {
                 if(!released_mutex) inferrenceMutex.ReleaseMutex();
                 buff.readWriteMutex.ReleaseMutex();
                 buff.beingTranscribed = false;
-
-
-                //FullText = MakeText();
             }
         }
 
@@ -244,7 +247,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
             return buff.buffer_head;
         }
 
-        const float sepAge = 0.666f;
+        const float sepAge = 0.8f;
         const float maxAge = 8.0f; //seconds
         private float GetNonsepMaxAge(int idx_to_start_from) {
             if(idx_to_start_from + 1 >= past_sayings.Count) return past_sayings[idx_to_start_from].timeEnd;

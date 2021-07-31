@@ -9,11 +9,9 @@ namespace VRCTranscriptMod.VRCTranscribe {
         private Dictionary<string, TranscriptSession> sessions = new Dictionary<string, TranscriptSession>();
 
         public float samplerate { get; private set; }
-        private Model model;
 
-        public SessionPool(float samplerate, Model model) {
+        public SessionPool(float samplerate) {
             this.samplerate = samplerate;
-            this.model = model;
 
             NetworkEvents.OnPlayerLeft += OnPlayerLeft;
             TranscriptPlayerOverrides.OnRemovedFromWhitelist += DeleteSession;
@@ -24,7 +22,7 @@ namespace VRCTranscriptMod.VRCTranscribe {
         }
 
         public void InitializeSession(string uid) {
-            TranscriptSession rec = new TranscriptSession(model, this.samplerate);
+            TranscriptSession rec = new TranscriptSession(this.samplerate);
 
             sessions[uid] = rec;
         }
