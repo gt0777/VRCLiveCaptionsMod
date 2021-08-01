@@ -197,6 +197,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         TextGenerator textGen = new TextGenerator();
         private void UpdateText() {
+            CleanUpOldSayings();
             textGen.UpdateText(past_sayings, active_saying);
         }
 

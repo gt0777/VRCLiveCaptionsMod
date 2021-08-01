@@ -23,7 +23,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             subtitleParent = new GameObject();
             subtitleParent.name = "SubtitleUI";
             UnityEngine.Object.DontDestroyOnLoad(subtitleParent);
-            subtitleParent.transform.SetParent(GameUtils.GetSubtitleUiParent());
+            //subtitleParent.transform.SetParent(GameUtils.GetSubtitleUiParent());
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             textObj.transform.rotation = finalQuat;
             textObj.transform.position = finalPosition;
-            textObj.transform.localScale = new Vector3(0.033f, 0.033f, 0.033f) * Settings.TextScale;
+            textObj.transform.localScale = new Vector3(0.014f, 0.014f, 0.014f) * Settings.TextScale;
         }
 
         /// <summary>
