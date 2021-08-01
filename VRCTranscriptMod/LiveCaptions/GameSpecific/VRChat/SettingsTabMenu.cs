@@ -1,4 +1,20 @@
-﻿using System;
+﻿// VRCLiveCaptionsMod - a mod for providing voice chat live captions
+// Copyright(C) 2021  gt0777
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.If not, see<https://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -171,8 +187,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
             Texture2D tex = new Texture2D(resource.Width, resource.Height);
             ImageConversion.LoadImage(tex, ms.ToArray());
-            
-            Sprite sprite = SpriteHelper.CreateSprite(tex, new Rect(0.0f, 0.0f, tex.width*1.0f, tex.height*1.0f), new Vector2(0.5f, 0.5f), 100.0f, 0, Vector4.zero);
+
+            Sprite sprite;
+            {
+                Rect size = new Rect(0.0f, 0.0f, tex.width, tex.height);
+                Vector2 pivot = new Vector2(0.5f, 0.5f);
+                Vector4 border = Vector4.zero;
+                sprite = Sprite.CreateSprite_Injected(tex, ref size, ref pivot, 100.0f, 0u, SpriteMeshType.Tight, ref border, false);
+            }
             return sprite;
         }
     }

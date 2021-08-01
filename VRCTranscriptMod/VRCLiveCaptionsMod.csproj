@@ -7,8 +7,8 @@
     <ProjectGuid>{121A501E-42D7-491C-AB13-225B600913DA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VRCTranscriptMod</RootNamespace>
-    <AssemblyName>VRCTranscriptMod</AssemblyName>
+    <RootNamespace>VRCLiveCaptionsMod</RootNamespace>
+    <AssemblyName>VRCLiveCaptionsMod</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -493,6 +493,9 @@
     <Reference Include="ValueTupleBridge">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed\ValueTupleBridge.dll</HintPath>
     </Reference>
+    <Reference Include="Vosk, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vosk.0.3.30\lib\netstandard2.0\Vosk.dll</HintPath>
+    </Reference>
     <Reference Include="VRC.SDKBase.Editor.BuildPipeline">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRC.SDKBase.Editor.BuildPipeline.dll</HintPath>
     </Reference>
@@ -529,6 +532,9 @@
     <Reference Include="VRCCore-Standalone">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCCore-Standalone.dll</HintPath>
     </Reference>
+    <Reference Include="VRChatUtilityKit">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\Mods\VRChatUtilityKit.dll</HintPath>
+    </Reference>
     <Reference Include="VRCLog">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCLog.dll</HintPath>
     </Reference>
@@ -550,8 +556,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Components\EnableDisableListener.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\SpriteHelper.cs" />
     <Compile Include="LiveCaptions\TranscriptData\AudioBuffer.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Profanities.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Slurs.cs" />
@@ -563,32 +567,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ElementBase.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ElementWithText.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\Label.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\QuarterButton.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\SingleButton.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\SubMenu.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\TabButton.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\ToggleButton.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Ui\UiManager.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\AsyncUtils.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\Converters.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\CursorUtils.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\DataUtils.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\Extensions.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\NetworkEvents.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\SemverVersion.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\VRCUtils.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\Utilities\XrefUtils.cs" />
     <Compile Include="LiveCaptions\Utils.cs" />
     <Compile Include="LiveCaptions\Abstract\IGameProvider.cs" />
     <Compile Include="LiveCaptions\Abstract\IVoiceRecognizer.cs" />
-    <Compile Include="LiveCaptions\VoskSpecific\Vosk\Model.cs" />
-    <Compile Include="LiveCaptions\VoskSpecific\Vosk\SpkModel.cs" />
-    <Compile Include="LiveCaptions\VoskSpecific\Vosk\Vosk.cs" />
-    <Compile Include="LiveCaptions\VoskSpecific\Vosk\VoskPINVOKE.cs" />
-    <Compile Include="LiveCaptions\VoskSpecific\Vosk\VoskRecognizer.cs" />
     <Compile Include="LiveCaptions\GameSpecific\GameUtils.cs" />
     <Compile Include="LiveCaptions\GameSpecific\VRChat\SettingsTabMenu.cs" />
     <Compile Include="LiveCaptions\SessionPool.cs" />
@@ -601,7 +582,7 @@
     <Compile Include="LiveCaptions\TranscriptSessionDebugger.cs" />
     <Compile Include="LiveCaptions\GameSpecific\VRChat\USpeakHooker.cs" />
     <Compile Include="LiveCaptions\VoskSpecific\VoskVoiceRecognizer.cs" />
-    <Compile Include="LiveCaptions\GameSpecific\VRChat\VRCTranscriptMod.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\VRCTranscriptModMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -614,6 +595,14 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="LiveCaptions\assets\livecaptionicon.png" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Vosk.0.3.30\build\Vosk.targets" Condition="Exists('..\packages\Vosk.0.3.30\build\Vosk.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Vosk.0.3.30\build\Vosk.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Vosk.0.3.30\build\Vosk.targets'))" />
+  </Target>
 </Project>
