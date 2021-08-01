@@ -1,7 +1,10 @@
 # VRC-Mods [LGPL v3]
 VRC-Mods repository: https://github.com/loukylor/VRC-Mods
+
 VRC-Mods license: LGPL v3 
+
 VRC-Mods is Copyright (c) 2021 loukylor.
+
 
 ## Files
 The following files/folders contain code taken from the VRC-Mods repository, and are hence subject to the VRC-Mods license:
@@ -16,8 +19,11 @@ The following modifications were made:
  
 # UnityExplorer [GPL v3]
 UnityExplorer repository: https://github.com/sinai-dev/UnityExplorer
+
 UnityExplorer license: GPL v3
+
 UnityExplorer is Copyright (c) 2021 sinai-dev
+
 
 ## Files
 The following file contains code taken from the UnityExplorer repository, and is hence subject to the UnityExplorer license:
@@ -30,8 +36,11 @@ The following changes were made:
 
 # Vosk-API [Apache-2.0]
 Vosk-API repository: https://github.com/alphacep/vosk-api
+
 Vosk-API license: Apache-2.0 License
+
 Vosk-API is Copyright (c) 2021 Alpha Cephei Inc
+
 
 ## Files
 All files under the `LiveCaptions/VoskSpecific/Vosk` folder have been taken from the Vosk-API repository and are hence subject to its license.
@@ -39,8 +48,11 @@ All files under the `LiveCaptions/VoskSpecific/Vosk` folder have been taken from
 
 # badwords [MIT]
 badwords repository: https://github.com/MauriceButler/badwords
+
 badwords license: MIT
+
 badwords is Copyright (c) 2013 Maurice Butler
+
 
 ## Files
 The following file contains code from the badwords repository: `LiveCaptions/TranscriptData/profanities/Profanities.cs`
