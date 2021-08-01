@@ -24,11 +24,11 @@ Vosk-API is Copyright (c) 2021 Alpha Cephei Inc
 This mod links to the Vosk-API library via NuGet.
 
 # badwords [MIT]
-badwords repository: https://github.com/MauriceButler/badwords
+badwords repository: https://github.com/web-mech/badwords
 
 badwords license: MIT
 
-badwords is Copyright (c) 2013 Maurice Butler
+badwords is Copyright (c) 2013 Michael Price
 
 
 ## Files

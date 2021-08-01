@@ -2,7 +2,19 @@
 
 This mod adds live captions to VRChat voice chat. This is an accessibility tool, intended to help those who are hard of hearing or deaf, but it may also be useful for other people who simply prefer seeing subtitles.
 
+## Credits
+
+This mod was made possible by:
+ * [MelonLoader](https://melonwiki.xyz), for providing a mod API
+ * [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods), for providing a bunch of useful VRChat utilities when creating a mod
+ * [Vosk](https://alphacephei.com/vosk/), the main speech recognition toolkit that works in real-time and provides small models
+ * [badwords](https://github.com/web-mech/badwords), a list of English bad words
+
 ## Building
+
+This section is for building the DLL, so you can skip this section if you already have it.
+
+Building this requires Visual Studio with SDK and targeting pack for .NET Framework 4.7.2
 
 Install VRChat and MelonLoader, and wait for it to complete the first-time launch.
 
@@ -61,10 +73,14 @@ Your installed models will be listed in the VRChat quick menu under the Live Cap
 
 Use the quick menu and click on someone to whitelist them for live captioning specifically.
 
-Otherwise, you can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you. 
+Otherwise, you can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you. If you whitelist someone, the range extends to about 12 meters. 
 
 The Range option is not recommended with large models.
 
-The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time.
+The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time as the person speaks more. The session gets reset after about 2 minutes of no activity (no speaking or out of range) to save on memory.
 
-VRChat may consume a significantly higher amount of memory with this mod enabled. You may need to close down other applications such as browsers to avoid hitting the pagefile.
+Most of the models have been trained on speech from places like audiobooks, so it will work best if the other person speaks clearly like they're an audiobook narrator and avoids making other kinds of noises (such as laughing, squeaking, playing music, etc)
+
+The current models don't have any detection for laughing, applause, or music, so you may get a bunch of nonsense words in such cases.
+
+VRChat may consume a significantly higher amount of memory with this mod enabled. You may need to close down other applications such as browsers to avoid hitting the pagefile, but this all depends on your system specifications. Try monitoring your memory usage when you start using this mod.
