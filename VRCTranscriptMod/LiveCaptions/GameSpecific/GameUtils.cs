@@ -5,6 +5,7 @@ using UnityEngine;
 using VRC.SDKBase;
 using VRChatUtilityKit.Utilities;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat;
 using VRCLiveCaptionsMod.LiveCaptions.VoskSpecific;
 
 namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {

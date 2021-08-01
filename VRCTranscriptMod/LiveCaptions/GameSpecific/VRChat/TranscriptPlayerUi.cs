@@ -8,7 +8,7 @@ using VRC.SDKBase;
 using VRChatUtilityKit.Ui;
 
 
-namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
+namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
     class TranscriptPlayerUi {
         private const string uipath = "UserInterface/QuickMenu/UserInteractMenu";
         private const string name = "Enable Live Transcript";

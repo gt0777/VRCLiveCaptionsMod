@@ -551,6 +551,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LiveCaptions\GameSpecific\VRChat\Components\EnableDisableListener.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\VRChat\SpriteHelper.cs" />
     <Compile Include="LiveCaptions\TranscriptData\AudioBuffer.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Profanities.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Slurs.cs" />

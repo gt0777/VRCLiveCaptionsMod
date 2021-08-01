@@ -5,7 +5,7 @@ using HarmonyLib;
 using MelonLoader;
 
 
-namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
+namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
     class USpeakHooker {
         public static event Action<VRCPlayer, float[], int> OnRawAudio;
         
