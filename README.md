@@ -8,6 +8,7 @@ Install VRChat and MelonLoader, and wait for it to complete the first-time launc
 
 After this, open the Visual Studio project and add the missing references:
  * MelonLoader is located at: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\MelonLoader.dll`
+ * VRChatUtilityKit must be downloaded from https://github.com/loukylor/VRC-Mods/releases/download/VRCUK-1.0.3/VRChatUtilityKit.dll
  * Other assemblies are located in this folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed`
 
 Once you've added all of the missing references, switch to Release configuration and x64 platform and build.
@@ -16,7 +17,9 @@ The build should succeed and you should now have `VRCTranscriptMod.dll` in your 
 
 ## Installation
 
-Ensure MelonLoader is installed and drag `VRCTranscriptMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
+Ensure MelonLoader is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
+
+VRChatUtilityKit is required for this mod to function. Download it from https://github.com/loukylor/VRC-Mods/releases/download/VRCUK-1.0.3/VRChatUtilityKit.dll and add it to your Mods folder.
 
 You will need additional libraries for the mod to work. Download libvosk from https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat`
 
