@@ -1,6 +1,6 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using UnityEngine;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
 namespace VRCLiveCaptionsMod {
     /// <summary>
@@ -29,7 +29,7 @@ namespace VRCLiveCaptionsMod {
                 try {
                     @delegates.DynamicInvoke(args);
                 } catch(Exception ex) {
-                    MelonLogger.Error("Error while invoking delegate:\n" + ex.ToString());
+                    GameUtils.LogError("Error while invoking delegate:\n" + ex.ToString());
                 }
             }
         }

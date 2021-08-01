@@ -110,9 +110,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         foreach(TranscriptSession session in pool.GetSessions()) {
                             if(session == null) continue;
                             
-                            if(session.getBytesPending() > 4000 || (time_now - session.last_activity > 0.1f && session.getBytesPending() > 0)) {
+                            if(session.GetSamplesPending() > 4000 || (time_now - session.last_activity > 0.1f && session.GetSamplesPending() > 0)) {
                                 // Time to empty the buffer by running inferrence
-                                session.RunInferrence();
+                                session.RunInference();
                             }
 
 
@@ -121,7 +121,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                                 GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
                                 pool.DeleteSession(session);
                             } else if((time_now - session.last_activity) > 0.5f) {
-                                if(session.getBytesPending() > 0) session.RunInferrence();
+                                if(session.GetSamplesPending() > 0) session.RunInference();
 
                                 session.CommitSayingIfTooOld();
                             }

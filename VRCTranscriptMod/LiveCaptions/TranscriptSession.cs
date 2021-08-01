@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
@@ -16,7 +14,9 @@ using BUFFER_TYPE = System.Single;
 namespace VRCLiveCaptionsMod.LiveCaptions {
 
     /// <summary>
-    /// A transcript session
+    /// A transcript session that calls the IVoiceRecognizer for voice recognition to generate Sayings
+    /// contains a TextGenerator to generate the text from Sayings
+    /// and a SubtitleUi to display the text
     /// </summary>
     class TranscriptSession {
         public IAudioSource audioSource;
@@ -30,9 +30,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private Mutex inferrenceMutex = new Mutex();
 
-        public float last_activity { get; private set; }
         private int sample_rate;
-
 
 
         public TranscriptSession(IAudioSource src, int sample_rate) {
@@ -58,7 +56,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             };
         }
 
-        public void RunInferrence() {
+        /// <summary>
+        /// Runs inference on the active buffer and clears it, updating the active Saying.
+        /// This is a very slow operation. It should be run in a background thread.
+        /// This should never be run in a foreground thread.
+        /// </summary>
+        public void RunInference() {
             if(recognizer == null) return;
 
             CommitSayingIfTooOld();
@@ -97,22 +100,30 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             active_saying = null;
         }
 
+        /// <summary>
+        /// Finalizes and flushes the active Saying if it's too old. This should be called
+        /// when there has been some silence.
+        /// </summary>
         public void CommitSayingIfTooOld() {
             if(active_saying != null)
                 if((Utils.GetTime() - active_saying.timeEnd) > sepAge) CommitSaying();
         }
 
+        /// <summary>
+        /// Returns whether or not the active Saying has any text in it
+        /// </summary>
+        /// <returns>false if the active Saying is blank, true if it isn't</returns>
         public bool HasWords(){
             return active_saying != null && active_saying.fullTxt.Length > 0;
         }
 
-        
+        /// <summary>
+        /// This should be called when the sesson is being destroyed.
+        /// </summary>
         public void FullDispose() {
-            GameUtils.Log("Fulldispose enter");
             recognizer = null;
             if(ui != null) ui.Dispose();
             ui = null;
-            GameUtils.Log("Fulldispose exit");
         }
 
         private AudioBuffer GetFreeBufferForEating() {
@@ -133,6 +144,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             return GetFreeBufferForEating(); //TODO: separate the logic
         }
 
+        /// <summary>
+        /// Time in seconds (Utils.GetTime()) when the last samples were submitted
+        /// </summary>
+        public float last_activity { get; private set; }
+
+        /// <summary>
+        /// Processes the given samples and saves them for later inference
+        /// </summary>
+        /// <param name="samples">The float sample array (values between -1.0 and 1.0)</param>
+        /// <param name="len">Number of samples to read from the array</param>
+        /// <returns>The number of samples that were actually sved,
+        ///     or -1 if the buffer mutex could not be obtained,
+        ///     or -2 if the buffer could not be obtained.</returns>
         public int EatSamples(float[] samples, int len) {
             AudioBuffer buff = GetFreeBufferForEating();
             if(buff == null) return -2;
@@ -164,15 +188,38 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
         }
 
-        public int getBytesPending() {
+        /// <summary>
+        /// Returns the number of samples that are pending inference.
+        /// </summary>
+        /// <returns>The number of samples pending inference</returns>
+        public int GetSamplesPending() {
             AudioBuffer buff = GetFreeBufferForDigestion();
             if(buff == null) return -2;
 
             return buff.buffer_head;
         }
 
+        /// <summary>
+        /// Maximum time gap in seconds between Sayings before they should be considered separate
+        /// </summary>
         public static float sepAge { get; private set; } = 0.666f;
+
+        /// <summary>
+        /// The maximum age of a Saying. Sayings older than this shall be destroyed, if they're not
+        /// connected to other Sayings that are younger than this value.
+        /// </summary>
         public static float maxAge { get; private set; } = 8.0f;
+
+        /// <summary>
+        /// Gets the age of a Saying's index, taking into account the fact that
+        /// it may be connected to other Sayings with a gap smaller than sepAge.
+        /// 
+        /// For example, if the 0th Saying's TimeEnd is 10 seconds old, but
+        /// the 1st Saying's TimeStart is 9.99 seconds old and TimeEnd is 3 seconds old,
+        /// and there exists no other Sayings, then 3 seconds will be returned.
+        /// </summary>
+        /// <param name="idx_to_start_from">The Saying's index</param>
+        /// <returns>The minimum age of the Saying</returns>
         private float GetNonsepMaxAge(int idx_to_start_from) {
             if(idx_to_start_from + 1 >= past_sayings.Count) return past_sayings[idx_to_start_from].timeEnd;
 
@@ -188,6 +235,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             return past_sayings[past_sayings.Count - 1].timeEnd;
         }
 
+        /// <summary>
+        /// Removes old values from past_sayings that are no longer required.
+        /// </summary>
         private void CleanUpOldSayings() {
             float currTime = Utils.GetTime();
             while(past_sayings.Count > 0 && (currTime - GetNonsepMaxAge(0)) > maxAge) {
@@ -195,16 +245,30 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
         }
 
-        TextGenerator textGen = new TextGenerator();
+        private TextGenerator textGen = new TextGenerator();
+
+        /// <summary>
+        /// Cleans up old sayings and calls for the text to be updated
+        /// </summary>
         private void UpdateText() {
             CleanUpOldSayings();
             textGen.UpdateText(past_sayings, active_saying);
         }
 
+        /// <summary>
+        /// Gets the text of what has been said in the current session,
+        /// in a caption-friendly form (with 2 max lines and auto scrolling)
+        /// </summary>
+        /// <returns>Caption-friendly filtered string of what is being said</returns>
         public string GetText() {
             return textGen.FullText;
         }
 
+
+        /// <summary>
+        /// Updates everything that requires updating. This should be called
+        /// once every frame.
+        /// </summary>
         public void Update() {
             if(audioSource == null) return;
 

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Vosk;
-using VRCLiveCaptionsMod;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
 namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
     static class VoskUtil {
@@ -16,7 +12,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
 
                 return text;
             } catch(System.InvalidOperationException) {
-                MelonLoader.MelonLogger.Warning("INVALID RESULT GIVEN: " + result);
+                GameUtils.LogError("INVALID RESULT GIVEN: " + result);
                 return "ERROR";
             }
         }
