@@ -33,7 +33,7 @@ You can find a list of various models at https://alphacephei.com/vosk/models
 
 It's recommended to use the small/lightweight models (for example, vosk-model-small-en-us-0.15) due to the high number of people and latency requirements.
 
-Once you download a model, extract it to `C:\models` with a friendly name. The folder structure must look something like this:
+Once you download a model, extract it to `C:\models` with a friendly name. The folder structure must look something like this (in this example, I have 2 models, one called english-large and another called english-light):
 
 ```
 C:\
