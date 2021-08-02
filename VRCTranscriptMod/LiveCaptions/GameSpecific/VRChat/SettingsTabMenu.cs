@@ -29,11 +29,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
         static ToggleButton filter_words;
 
+        static QuarterButton[] size_buttons = new QuarterButton[2];
+
 
         static Label model_info;
 
         static SubMenu submenu;
-   
+
+        static bool was_initialized = false;
 
         
         public static void Init(SubMenu sub) {
@@ -52,26 +55,41 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 Settings.AutoTranscribeWhenInRange);
 
             filter_words = new ToggleButton(submenu.gameObject, new Vector3(2, 0), "Swear filter", "Disabled", 
-                
                 (state) => {
                     Settings.ProfanityFilterLevel = state ? ProfanityFilter.FilterLevel.ALL : ProfanityFilter.FilterLevel.NONE;
                 },
-                "Enable this option if you want close players to be automatically transcribed, without needing to manually enable each player. This may consume a lot of memory.",
-                "Players close to you will be automatically transcribed.",
+                "Enable swear-word filtering.",
+                "Swear words will be filtered and replaced with [_].",
                 "rangetranscribetoggle",
                 Settings.ProfanityFilterLevel == ProfanityFilter.FilterLevel.ALL);
 
 
-            // TODO: increase/decrease size buttons
+            GameUtils.Log("Make quartrButtons");
+            size_buttons[0] = new QuarterButton(submenu.gameObject, new Vector3(3, 0), new Vector2(0, 0), "-",
+                () => SizeChange(false),
+                "Decrease subtitle size",
+                "subtitleSizeDecrease");
 
-            model_info = new Label(submenu.gameObject, new Vector3(3, 0), "", "model_info");
+            size_buttons[1] = new QuarterButton(submenu.gameObject, new Vector3(3, 0), new Vector2(1, 0), "+",
+                () => SizeChange(true),
+                "Increase subtitle size",
+                "subtitleSizeIncrease");
+            GameUtils.Log("Finish quartrButtons");
 
-            /*
-            Settings.ModelChanged += (model) => {
-                Update();
-            };*/
+            model_info = new Label(submenu.gameObject, new Vector3(4, 0), "", "model_info");
 
             Settings.ModelName = "model";
+
+
+            Settings.ModelChanged += () => {
+                GameUtils.Log("Model changed");
+                UpdateStatusText();
+                GameUtils.Log("Model change end");
+            };
+        }
+
+        private static void SizeChange(bool increase) {
+            Settings.TextScale = Settings.TextScale + (increase ? 0.05f : -0.05f);
         }
 
         private static void RangeChanged(bool to) {
@@ -98,7 +116,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                     SingleButton button = new SingleButton(
                         submenu.gameObject,
                         new Vector3(x+1, y),
-                        currModelName,
+                        "Use " + currModelName,
                         () => {
                             Settings.ModelName = currModelName;
                             Update();
@@ -117,16 +135,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
             return model_dirs.Length;
         }
 
-        public static void Update() {
-            foreach(GameObject garbage in trash) {
-                GameObject.Destroy(garbage);
-            }
-
-            killswitch.State = Settings.Disabled;
-            range_transcribe.State = Settings.AutoTranscribeWhenInRange;
-
+        public static void UpdateStatusText() {
             string modelInfoTxt = "";
-
 
             if(!Settings.ModelExists()) {
                 modelInfoTxt = "Couldn't find model " + Settings.GetModelPath();
@@ -142,15 +152,50 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 }
             }
 
+            model_info.TextComponent.text = modelInfoTxt;
+        }
+
+        /// <summary>
+        /// Sets the current model to the first one in existence by default
+        /// </summary>
+        private static void FirstInitialize() {
+            GameUtils.Log("first init");
+            if(Settings.ModelExists()) return;
+            if(!Directory.Exists(Settings.model_directory)) return;
+            string[] model_dirs = Directory.GetDirectories(Settings.model_directory);
+
+            if(model_dirs.Length == 0) return;
+
+            Settings.ModelName = model_dirs[0].Replace(Settings.model_directory, "");
+            GameUtils.Log("end init");
+        }
+
+        public static void Update() {
+            if(!was_initialized) {
+                FirstInitialize();
+                was_initialized = true;
+            }
+
+            foreach(GameObject garbage in trash) {
+                GameObject.Destroy(garbage);
+            }
+
+            killswitch.State = Settings.Disabled;
+            range_transcribe.State = Settings.AutoTranscribeWhenInRange;
+
+            UpdateStatusText();
+
             int models = PopulateModelButtons();
 
+            string modelInfoTxt = "";
             if(models == -1) {
                 modelInfoTxt = "Model directory " + Settings.model_directory + " doesn't exist!";
-            }else if(models == 0) {
+            } else if(models == 0) {
                 modelInfoTxt = "No models found in " + Settings.model_directory + ", please add some.";
             }
 
-            model_info.TextComponent.text = modelInfoTxt;
+            if(modelInfoTxt.Length > 1)
+                model_info.TextComponent.text = modelInfoTxt;
         }
     }
 

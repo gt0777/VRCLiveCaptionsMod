@@ -29,7 +29,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public static event Action<bool> DisableChanging;
         public static event Action<bool> TranscribeChanging;
-        public static event Action<Model> ModelChanged;
+        public static event Action ModelChanged;
         public static event Action<float> TextScaleChanging;
 
         private static bool _disabled = false;
@@ -74,6 +74,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private static void loadNewModel() {
             Vosk_model = null;
+            ModelChanged?.DelegateSafeInvoke();
 
             try {
                 if(Directory.Exists(model_directory + _modelName)) {
@@ -87,7 +88,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 Vosk_model = null;
             } finally {
                 Loading = false;
-                ModelChanged?.DelegateSafeInvoke(Vosk_model);
+                ModelChanged?.DelegateSafeInvoke();
                 VoiceRecognizerEvents.FireChangedEvent();
             }
         }
