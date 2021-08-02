@@ -16,7 +16,7 @@ This section is for building the DLL, so you can skip this section if you alread
 
 Building this requires Visual Studio with SDK and targeting pack for .NET Framework 4.7.2
 
-Install VRChat and MelonLoader, and wait for it to complete the first-time launch.
+Install VRChat and MelonLoader 0.4.3, and wait for it to complete the first-time launch.
 
 After this, open the Visual Studio project and add the missing references:
  * MelonLoader is located at: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\MelonLoader.dll`
@@ -28,9 +28,13 @@ The build should succeed and you should now have `VRCLiveCaptionsMod.dll` in you
 
 ## Installation
 
-Ensure MelonLoader is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
+Ensure MelonLoader 0.4.3 (or higher) is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
 
-You will need additional libraries for the mod to work. Download libvosk from https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat`
+You will need additional libraries for the mod to work. Download [libvosk](https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip) and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat` (in the same directory as the .exe)
+
+![Screenshot of where to put the files](https://i.imgur.com/JcoPz5x.png)
+
+
 
 The game should successfully launch now, but live captions will not yet function as you need to install a Vosk voice recognition model.
 
