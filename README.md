@@ -2,6 +2,8 @@
 
 This mod adds live captions to VRChat voice chat. This is an accessibility tool, intended to help those who are hard of hearing or deaf, but it may also be useful for other people who simply prefer seeing subtitles.
 
+![Demonstration screenshot](https://i.imgur.com/4euvS07.png)
+
 ## Credits
 
 This mod was made possible by:
@@ -28,7 +30,9 @@ The build should succeed and you should now have `VRCLiveCaptionsMod.dll` in you
 
 ## Installation
 
-Ensure MelonLoader 0.4.3 (or higher) is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
+Ensure MelonLoader 0.4.3 (or higher) is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods` (or similar, depending on your VRChat game location).
+
+If you're unsure of your VRChat game location, rightclick VRChat in Steam, then navigate to Manage > Browse local files.
 
 You will need additional libraries for the mod to work. Download [libvosk](https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip) and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat` (in the same directory as the .exe)
 
@@ -43,11 +47,11 @@ The game should successfully launch now, and the live captions tab should be acc
 
 ## Vosk model installation
 
-The Models directory `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Models\` gets automatically created upon first launch.
+By default, the english-light model (vosk-model-small-en-us-0.15, Apache 2.0) will be automatically downloaded and installed into the Models directory. If this is fine and you don't need any additional languages or different English models, you can skip this section.
 
-By default, the english-light model will be automatically downloaded and installed into that directory. However, you can also download additional languages from [here](https://alphacephei.com/vosk/models).
+The Models directory `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Models\` (or similar, depending on your VRChat game location) gets automatically created upon first launch.
 
-It's recommended to use the small/lightweight models (for example, vosk-model-small-en-us-0.15) due to the high number of people and latency requirements.
+You can also download additional languages or different models from [here](https://alphacephei.com/vosk/models). It's recommended to use the small/lightweight models due to the high number of people and latency requirements.
 
 Simply extract the folder inside of the .zip to the Models directory, and optionally rename it to something more friendly. Make sure the folder structure inside is similar to that of english-light, and that the folder isn't nested in another folder. Invalid folder structures or invalid models will cause the game to immediately crash when you try to switch to it, so be warned.
 
@@ -69,3 +73,9 @@ Most of the models have been trained on speech from places like audiobooks, so i
 The current models don't have any detection for laughing, applause, or music, so you may get a bunch of nonsense words in such cases.
 
 VRChat may consume a significantly higher amount of memory with this mod enabled. You may need to close down other applications such as browsers to avoid hitting the pagefile, but this all depends on your system specifications. Try monitoring your memory usage when you start using this mod.
+
+## Licensing
+
+This project is open-source under the GPLv3 license. However, if you're from the VRChat team and would like to implement this into VRChat itself but can't do so without a more permissive license, please get in touch with me at:
+
+![Contact](https://i.imgur.com/LDo9sNf.png)
