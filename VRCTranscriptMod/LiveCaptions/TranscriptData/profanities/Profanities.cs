@@ -149,6 +149,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
     "flipping the bird",
     "fuck",
     "fucker",
+    "fucked",
     "fuckin",
     "fucking",
     "fucks",
@@ -436,7 +437,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
     "guiena",
     "h0r",
     "h4x0r",
-    "hell",
     "helvete",
     "hoer*",
     "honkey",
@@ -515,7 +515,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
     "wichser",
     "wop*",
     "yed",
-    "zabourah"
+    "zabourah",
+
+    "pervert",
+    "perv"
         };
     }
 }
