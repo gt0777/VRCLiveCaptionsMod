@@ -4,6 +4,10 @@ This mod adds live captions to VRChat voice chat. This is an accessibility tool,
 
 ![Demonstration screenshot](https://i.imgur.com/4euvS07.png)
 
+## Privacy
+
+This mod uses the open-source Vosk and its offline models to process speech to text. This is done completely locally on your PC, meaning your conversations stay private and don't get logged (by this mod at least. I have no idea what VRChat servers or the proprietary Oculus Lipsync library does with peoples' voice)
+
 ## Credits
 
 This mod was made possible by:
