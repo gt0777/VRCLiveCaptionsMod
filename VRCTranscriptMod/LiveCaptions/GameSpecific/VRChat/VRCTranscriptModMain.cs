@@ -34,11 +34,11 @@ namespace VRCLiveCaptionsMod {
         public override void OnApplicationStart() {
             Instance = this;
             
-            VRCUtils.OnUiManagerInit += OnUiManagerInit;
-
 #if INTEGRATED_VRCUK
             vrcUtility.OnApplicationStart();
 #endif
+
+            VRCUtils.OnUiManagerInit += OnUiManagerInit;
         }
 
 
