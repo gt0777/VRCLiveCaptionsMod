@@ -71,7 +71,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
 
             bool found_englishLight = false;
             foreach(string subdir in subdirs) {
-                if(subdir.Equals("english-light")) found_englishLight = true;
+                if(subdir.Contains("english-light")) found_englishLight = true;
             }
 
             if(!found_englishLight) {

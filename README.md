@@ -34,9 +34,12 @@ You will need additional libraries for the mod to work. Download [libvosk](https
 
 ![Screenshot of where to put the files](https://i.imgur.com/JcoPz5x.png)
 
+The game should successfully launch now, and the live captions tab should be accessible within the Quick Menu.
+* If there is no Live Captions tab button, you probably didn't install the mod properly. Check the log file for more details.
+* If the Live Captions tab button is there, but clicking on it doesn't do anything, then it's likely failing to load the additional libvosk libraries. Ensure they're located in the same folder as VRChat.exe as seen in the screenshot above.
 
 
-The game should successfully launch now, but live captions will not yet function as you need to install a Vosk voice recognition model.
+![Screenshot of the Live Captions quickmenu tab](https://i.imgur.com/yc1AyzA.png)
 
 ## Vosk model installation
 
