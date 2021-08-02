@@ -25,7 +25,7 @@ After this, open the Visual Studio project and add the missing references:
 
 Once you've added all of the missing references, switch to Release configuration and x64 platform and build.
 
-The build should succeed and you should now have `VRCTranscriptMod.dll` in your x64 release binaries folder.
+The build should succeed and you should now have `VRCLiveCaptionsMod.dll` in your x64 release binaries folder.
 
 ## Installation
 
