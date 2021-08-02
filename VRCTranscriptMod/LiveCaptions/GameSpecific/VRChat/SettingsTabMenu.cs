@@ -43,8 +43,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
             submenu = sub;
 
             killswitch = new ToggleButton(submenu.gameObject, new Vector3(0, 0), "Killswitch", "Off", KillChanged,
-                "Killswitch is disabled. Live captions will continue to work.",
-                "Killswitch is enabled. Live captioning has been terminated.",
+                "Enabling killswitch will instantly disable live captioning and terminate all captioning sessions.",
+                "Enabling killswitch will instantly disable live captioning and terminate all captioning sessions.",
                 "killswitchtoggle",
                 Settings.Disabled);
 
@@ -63,8 +63,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 "rangetranscribetoggle",
                 Settings.ProfanityFilterLevel == ProfanityFilter.FilterLevel.ALL);
 
-
-            GameUtils.Log("Make quartrButtons");
+            
             size_buttons[0] = new QuarterButton(submenu.gameObject, new Vector3(3, 0), new Vector2(0, 0), "-",
                 () => SizeChange(false),
                 "Decrease subtitle size",
@@ -74,7 +73,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 () => SizeChange(true),
                 "Increase subtitle size",
                 "subtitleSizeIncrease");
-            GameUtils.Log("Finish quartrButtons");
 
             model_info = new Label(submenu.gameObject, new Vector3(4, 0), "", "model_info");
 
@@ -82,9 +80,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
 
             Settings.ModelChanged += () => {
-                GameUtils.Log("Model changed");
                 UpdateStatusText();
-                GameUtils.Log("Model change end");
             };
         }
 
@@ -159,7 +155,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
         /// Sets the current model to the first one in existence by default
         /// </summary>
         private static void FirstInitialize() {
-            GameUtils.Log("first init");
             if(Settings.ModelExists()) return;
             if(!Directory.Exists(Settings.model_directory)) return;
             string[] model_dirs = Directory.GetDirectories(Settings.model_directory);
@@ -167,7 +162,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
             if(model_dirs.Length == 0) return;
 
             Settings.ModelName = model_dirs[0].Replace(Settings.model_directory, "");
-            GameUtils.Log("end init");
         }
 
         public static void Update() {
@@ -206,14 +200,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
         public static void Init() {
             // Create menu and tab button
-            menu = new SubMenu("UserInterface/QuickMenu", "VRCTranscribeOptions");
+            menu = new SubMenu("UserInterface/QuickMenu", "VRCLiveCaptionSettings");
             
             Sprite liveCaptionSprite = GetSpriteFromResource(Properties.Resources.LiveCaptionIcon);
             tabButton = new TabButton(liveCaptionSprite, menu, () => {
                 OnTabButtonClick();
             });
 
-            tabButton.gameObject.GetComponent<UiTooltip>().field_Public_String_0 = "Live Transcribe settings";
+            tabButton.gameObject.GetComponent<UiTooltip>().field_Public_String_0 = "Live Captioning settings";
 
             // Populate
             SettingsMenuContents.Init(menu);
