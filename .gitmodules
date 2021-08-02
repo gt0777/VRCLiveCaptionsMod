@@ -1,0 +1,8 @@
+[submodule "VRCTranscriptMod/VRChatUtilityKit"]
+	path = VRCTranscriptMod/VRChatUtilityKit
+	url = https://github.com/gt0777/VRC-Mods
+	branch = VRChatUtilityKitOnlyForCaptions
+[submodule "VRCTranscriptMod/Vosk"]
+	path = VRCTranscriptMod/Vosk
+	url = https://github.com/gt0777/vosk-api
+	branch = CSharpOnly
