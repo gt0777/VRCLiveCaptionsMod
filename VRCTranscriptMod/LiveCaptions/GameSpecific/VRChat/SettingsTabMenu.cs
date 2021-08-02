@@ -76,7 +76,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
             model_info = new Label(submenu.gameObject, new Vector3(4, 0), "", "model_info");
 
-            Settings.ModelName = "model";
+            Settings.ModelName = "english-light";
 
 
             Settings.ModelChanged += () => {
@@ -135,13 +135,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
             string modelInfoTxt = "";
 
             if(!Settings.ModelExists()) {
-                modelInfoTxt = "Couldn't find model " + Settings.GetModelPath();
+                modelInfoTxt = "Couldn't find model " + Settings.ModelName;
             } else {
                 if(Settings.Vosk_model == null) {
                     if(Settings.Loading) {
-                        modelInfoTxt = "Loading model " + Settings.GetModelPath();
+                        modelInfoTxt = "Loading model " + Settings.ModelName;
                     } else {
-                        modelInfoTxt = "Failed to load model " + Settings.GetModelPath();
+                        modelInfoTxt = "Failed to load model " + Settings.ModelName;
                     }
                 } else {
                     modelInfoTxt = "Using model " + Settings.ModelName;
@@ -214,7 +214,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
         }
 
         public static void OnTabButtonClick() {
-            // TODO: update state of everything
             SettingsMenuContents.Update();
             tabButton.OpenTabMenu();
         }

@@ -116,6 +116,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                     float time_now = Utils.GetTime();
 
                     try {
+                        /*
                         if(time_now - last_session_log > 8.0f) {
                             GameUtils.Log(pool.GetSessions().Count.ToString() + " sessions");
                             foreach(TranscriptSession session in pool.GetSessions()) {
@@ -123,6 +124,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                             }
                             last_session_log = time_now;
                         }
+                        */
                         foreach(TranscriptSession session in pool.GetSessions()) {
                             if(session == null) continue;
                             

@@ -43,7 +43,5 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
             timeEnd = Utils.GetTime();
             this.final = final;
         }
-
-        // TODO: per-word time?
     }
 }

@@ -18,11 +18,13 @@ using System;
 using System.IO;
 using System.Threading;
 using Vosk;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 using VRCLiveCaptionsMod.LiveCaptions.TranscriptData;
+using VRCLiveCaptionsMod.LiveCaptions.VoskSpecific;
 
 namespace VRCLiveCaptionsMod.LiveCaptions {
     class Settings {
-        public static string model_directory = "C:\\models\\";
+        public static string model_directory = GameUtils.GetPathForModels();
         public static float transcribe_range = 6.0f;
 
         public static Model Vosk_model { get; private set; }
@@ -107,6 +109,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public static bool ModelExists() {
             return Directory.Exists(GetModelPath());
+        }
+
+
+
+        public static void Init() {
+            VoskUtil.EnsureModels(model_directory);
         }
 
     }

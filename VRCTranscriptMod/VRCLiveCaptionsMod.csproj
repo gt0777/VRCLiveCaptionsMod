@@ -250,6 +250,12 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -617,6 +623,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="LiveCaptions\assets\livecaptionicon.png" />
+    <None Include="packages.config" />
     <None Include="Vosk\COPYING" />
     <None Include="Vosk\README.md" />
     <None Include="VRChatUtilityKit\LICENSE" />

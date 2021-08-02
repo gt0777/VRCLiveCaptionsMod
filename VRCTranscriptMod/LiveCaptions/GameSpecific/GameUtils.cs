@@ -17,6 +17,8 @@
 using MelonLoader;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using UnityEngine;
 using VRC.SDKBase;
 using VRChatUtilityKit.Utilities;
@@ -85,6 +87,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
             };
 
             TranscriptPlayerUi.Init();
+
+            Settings.Init();
             SettingsTabMenu.Init();
         }
 
@@ -139,6 +143,16 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
 
         public static Transform GetSubtitleUiParent() {
             return GameObject.Find("UserInterface").transform;
+        }
+
+        public static string GetPathForModels() {
+            string folder = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\Models\";
+
+            if(!Directory.Exists(folder)) {
+                Directory.CreateDirectory(folder);
+            }
+
+            return folder;
         }
     }
 }

@@ -20,7 +20,6 @@ Install VRChat and MelonLoader, and wait for it to complete the first-time launc
 
 After this, open the Visual Studio project and add the missing references:
  * MelonLoader is located at: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\MelonLoader.dll`
- * VRChatUtilityKit must be downloaded from https://github.com/loukylor/VRC-Mods/releases/download/VRCUK-1.0.3/VRChatUtilityKit.dll
  * Other assemblies are located in this folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed`
 
 Once you've added all of the missing references, switch to Release configuration and x64 platform and build.
@@ -31,42 +30,21 @@ The build should succeed and you should now have `VRCLiveCaptionsMod.dll` in you
 
 Ensure MelonLoader is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods`
 
-VRChatUtilityKit is required for this mod to function. Download it from https://github.com/loukylor/VRC-Mods/releases/download/VRCUK-1.0.3/VRChatUtilityKit.dll and add it to your Mods folder.
-
 You will need additional libraries for the mod to work. Download libvosk from https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat`
 
 The game should successfully launch now, but live captions will not yet function as you need to install a Vosk voice recognition model.
 
 ## Vosk model installation
 
-Create a folder `C:\models`
+The Models directory `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Models\` gets automatically created upon first launch.
 
-You can find a list of various models at https://alphacephei.com/vosk/models
+By default, the english-light model will be automatically downloaded and installed into that directory. However, you can also download additional languages from [here](https://alphacephei.com/vosk/models).
 
 It's recommended to use the small/lightweight models (for example, vosk-model-small-en-us-0.15) due to the high number of people and latency requirements.
 
-Once you download a model, extract it to `C:\models` with a friendly name. The folder structure must look something like this (in this example, I have 2 models, one called english-large and another called english-light):
+Simply extract the folder inside of the .zip to the Models directory, and optionally rename it to something more friendly. Make sure the folder structure inside is similar to that of english-light, and that the folder isn't nested in another folder. Invalid folder structures or invalid models will cause the game to immediately crash when you try to switch to it, so be warned.
 
-```
-C:\
-└───models
-    ├───english-large
-    │   ├───am
-    │   ├───conf
-    │   ├───graph
-    │   │   └───phones
-    │   ├───ivector
-    │   ├───rescore
-    │   └───rnnlm
-    └───english-light
-        ├───am
-        ├───conf
-        ├───graph
-        │   └───phones
-        └───ivector
-```
-
-Your installed models will be listed in the VRChat quick menu under the Live Captions tab. You may click on one to switch to it. Currently, the loading indicator is broken so you'll need to repeatedly click on the Live Captions tab button to update the status text to figure out when it has loaded (it'll say "Using model modelname")
+Your installed models will be listed in the VRChat quick menu under the Live Captions tab. You may click on one to switch to it.
 
 
 ## Usage
