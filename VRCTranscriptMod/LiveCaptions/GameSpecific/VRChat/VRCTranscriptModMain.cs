@@ -27,10 +27,18 @@ namespace VRCLiveCaptionsMod {
     public class VRCLiveCaptionsModMain : MelonMod {
         internal static VRCLiveCaptionsModMain Instance { get; private set; }
 
+#if INTEGRATED_VRCUK
+        VRChatUtilityKit.VRChatUtilityKitMod vrcUtility = new VRChatUtilityKit.VRChatUtilityKitMod();
+#endif 
+
         public override void OnApplicationStart() {
             Instance = this;
             
             VRCUtils.OnUiManagerInit += OnUiManagerInit;
+
+#if INTEGRATED_VRCUK
+            vrcUtility.OnApplicationStart();
+#endif
         }
 
 
@@ -58,6 +66,10 @@ namespace VRCLiveCaptionsMod {
 
         private float lastUpdate = 0;
         public override void OnUpdate() {
+#if INTEGRATED_VRCUK
+            vrcUtility.OnUpdate();
+#endif
+
             if(worker != null)
                 worker.Tick();
 
