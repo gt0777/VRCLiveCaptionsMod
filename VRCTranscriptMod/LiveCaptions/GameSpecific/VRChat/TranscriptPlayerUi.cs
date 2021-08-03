@@ -27,8 +27,8 @@ using VRChatUtilityKit.Ui;
 namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
     class TranscriptPlayerUi {
         private const string uipath = "UserInterface/QuickMenu/UserInteractMenu";
-        private const string name = "Enable Live Transcript";
-        private const string tooltip = "Toggles live transcription of the user's voice. This may use a lot of memory.";
+        private const string name = "Caption High Priority";
+        private const string tooltip = "Toggles live captioning of the user's voice with high priority.";
 
         private static string currently_active_uid = "";
         private static void onQuickMenuOpen(VRC.Core.APIUser param_1) {
@@ -48,7 +48,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 new Action<bool>((state) => {
                     AudioSourceOverrides.SetOverride(currently_active_uid, state);
                 }),
-                tooltip, tooltip, "TranscriptToggle", false, true
+                tooltip, tooltip, "CaptionToggle", false, true
             );
 
             transcriptToggle.gameObject.AddComponent<GraphicRaycaster>();

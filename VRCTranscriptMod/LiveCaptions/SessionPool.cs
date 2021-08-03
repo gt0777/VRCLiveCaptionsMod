@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
@@ -25,7 +26,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public int samplerate { get; private set; }
 
-        public SessionPool(int samplerate) {
+        public SessionPool(int samplerate = 48000) {
             this.samplerate = samplerate;
 
             GameUtils.GetProvider().AudioSourceRemoved += OnPlayerLeft;
@@ -42,50 +43,62 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             sessions[src.GetUID()] = rec;
         }
 
-        public void DeleteAllSessions() {
-            foreach(TranscriptSession session in sessions.Values) {
-                try {
-                    session.FullDispose();
-                }catch(Exception e) {
-                    GameUtils.LogError("DELETESSSIONS: " + e.ToString());
+        public void DeleteAllSessions(bool dispose = true) {
+            if(dispose) {
+                foreach(TranscriptSession session in sessions.Values) {
+                    try {
+                        session.FullDispose();
+                    } catch(Exception e) {
+                        GameUtils.LogError("DELETESSSIONS: " + e.ToString());
+                    }
                 }
             }
 
             sessions.Clear();
         }
 
-        private void DeleteByValue(TranscriptSession session) {
+        private void DeleteByValue(TranscriptSession session, bool dispose) {
             foreach(string key in sessions.Keys) {
                 if(sessions[key] == session) {
-                    session.FullDispose();
+                    if(dispose)
+                        session.FullDispose();
                     sessions.Remove(key);
                     return;
                 }
             }
         }
 
-        public void DeleteSession(TranscriptSession session) {
+        public void DeleteSession(TranscriptSession session, bool dispose = true) {
             if((session.audioSource == null) || (!DeleteSession(session.audioSource.GetUID()))) {
-                DeleteByValue(session);
+                DeleteByValue(session, dispose);
                 return;
             }
         }
 
-        public void DeleteSession(IAudioSource src) {
-            DeleteSession(src.GetUID());
+        public void DeleteSession(IAudioSource src, bool dispose = true) {
+            DeleteSession(src.GetUID(), dispose);
         }
 
-        public bool DeleteSession(string uid) {
+        public bool DeleteSession(string uid, bool dispose = true) {
             if(!sessions.ContainsKey(uid)) return false;
 
             TranscriptSession rec = sessions[uid];
 
-            rec.FullDispose();
+            if(dispose)
+                rec.FullDispose();
+
             sessions.Remove(uid);
 
             return true;
         }
 
+        public bool ContainsSession(TranscriptSession session) {
+            if(session.audioSource == null) {
+                GameUtils.LogError("Cannot check a session with null audiosource!");
+                return false;
+            }
+            return sessions.ContainsKey(session.audioSource.GetUID());
+        }
 
         public TranscriptSession GetOrCreateSession(IAudioSource src) {
             if(!sessions.ContainsKey(src.GetUID())) {
@@ -93,11 +106,123 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
             TranscriptSession rec = sessions[src.GetUID()];
 
+            if(rec.disposed) {
+                DeleteSession(src);
+                return GetOrCreateSession(src);
+            }
+
             return rec;
+        }
+
+        public void InsertSession(TranscriptSession session) {
+            if(session.audioSource == null) {
+                GameUtils.LogError("Cannot insert a session with null audiosource!");
+                return;
+            }
+            if(!sessions.ContainsKey(session.audioSource.GetUID())) {
+                sessions[session.audioSource.GetUID()] = session;
+            }
         }
 
         public Dictionary<string, TranscriptSession>.ValueCollection GetSessions() {
             return sessions.Values;
+        }
+
+        public bool LockedFromStarting = false;
+        private Thread bg_thread = null;
+        private Mutex RunBusyMutex = new Mutex();
+
+        /// <summary>
+        /// The background thread loop that calls for inference.
+        /// </summary>
+        private void Run() {
+            while(true) {
+                Thread.Sleep(10);
+                try {
+                    while(!RunBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab RunBusyMutex??");
+                    if(Settings.Disabled) continue;
+
+                    float time_now = Utils.GetTime();
+
+                    try {
+                        foreach(TranscriptSession session in GetSessions()) {
+                            if(session == null) continue;
+
+                            if(session.GetSamplesPending() > 4000 || (time_now - session.last_activity > 0.1f && session.GetSamplesPending() > 0)) {
+                                // Time to empty the buffer by running inferrence
+                                session.RunInference();
+                            }
+
+
+                            if((time_now - session.last_activity) > 96.0) {
+                                // The player is no longer speaking, remove their session if they're not
+                                // whitelisted
+                                if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
+                                    GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
+                                    DeleteSession(session);
+                                    break; // collection was modified, enumeration may not resume
+                                }
+                            } else if((time_now - session.last_activity) > 0.5f) {
+                                if(session.GetSamplesPending() > 0) session.RunInference();
+
+                                session.CommitSayingIfTooOld();
+                            }
+                        }
+                    } catch(Exception e) {
+                        GameUtils.LogError("In Run(): " + e.ToString());
+                    }
+                } finally {
+                    RunBusyMutex.ReleaseMutex();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The foreground tick method that should be called once every frame.
+        /// This updates all of the subtitle UIs.
+        /// </summary>
+        public void Tick() {
+            try {
+                foreach(TranscriptSession session in GetSessions()) {
+                    try {
+                        session.Update();
+                    } catch(Exception e) {
+                        GameUtils.LogError(e.ToString());
+                    }
+                }
+            } catch(System.InvalidOperationException) {
+                // probably session has been added or removed, so ignore this
+
+            } catch(Exception e) {
+                GameUtils.Log("An exception has occurred in tick: " + e.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Ensures the background thread is stopped
+        /// </summary>
+        public void EnsureThreadIsStopped() {
+            while(!RunBusyMutex.WaitOne()) { }
+            try {
+                if(bg_thread != null && bg_thread.IsAlive) {
+                    bg_thread.Abort();
+                    bg_thread = null;
+                }
+            } finally {
+                RunBusyMutex.ReleaseMutex();
+            }
+        }
+
+        /// <summary>
+        /// Ensures the background thread is running
+        /// </summary>
+        public void EnsureThreadIsRunning() {
+            if(LockedFromStarting) return;
+
+            if(bg_thread == null || !bg_thread.IsAlive) {
+                bg_thread = new Thread(Run);
+                bg_thread.Start();
+            }
         }
     }
 }

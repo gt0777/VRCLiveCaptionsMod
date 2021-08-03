@@ -579,7 +579,7 @@
     <Compile Include="LiveCaptions\SubtitleUi.cs" />
     <Compile Include="LiveCaptions\TranscribeWorker.cs" />
     <Compile Include="LiveCaptions\GameSpecific\VRChat\TranscriptPlayerUi.cs" />
-    <Compile Include="LiveCaptions\TranscriptPlayerOverrides.cs" />
+    <Compile Include="LiveCaptions\AudioSourceOverrides.cs" />
     <Compile Include="LiveCaptions\TranscriptSession.cs" />
     <Compile Include="LiveCaptions\TranscriptSessionDebugger.cs" />
     <Compile Include="LiveCaptions\GameSpecific\VRChat\USpeakHooker.cs" />

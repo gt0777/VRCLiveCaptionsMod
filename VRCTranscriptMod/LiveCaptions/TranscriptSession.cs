@@ -48,8 +48,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private int sample_rate;
 
-        public bool whitelisted = false;
-
+        public bool whitelisted { get; private set; } = false;
+        public bool disposed { get; private set; } = false;
 
         public TranscriptSession(IAudioSource src, int sample_rate) {
             audioSource = src;
@@ -93,6 +93,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This should never be run in a foreground thread.
         /// </summary>
         public void RunInference() {
+            if(disposed) return;
             if(recognizer == null) return;
 
             CommitSayingIfTooOld();
@@ -152,9 +153,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This should be called when the sesson is being destroyed.
         /// </summary>
         public void FullDispose() {
+            disposed = true;
+
             recognizer = null;
             if(ui != null) ui.Dispose();
             ui = null;
+            audioBuffers = null;
+            past_sayings = null;
         }
 
         private AudioBuffer GetFreeBufferForEating() {

@@ -28,8 +28,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
     /// It also hooks into IGameProvider's events
     /// </summary>
     public class TranscribeWorker {
-        private Thread bg_thread = null;
-        private SessionPool pool = null;
+        private SessionPool general_pool = new SessionPool();
+        private SessionPool[] pools = new SessionPool[2];
         
         public TranscribeWorker() {
             GameUtils.GetProvider().AllAudioSourcesRemoved += () => CleanAndRestart();
@@ -38,17 +38,24 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             Settings.DisableChanging += (bool to) => {
                 if(to) CleanAndRestart();
             };
+
+            pools[0] = new SessionPool();
+            pools[1] = new SessionPool();
+
+            general_pool.LockedFromStarting = true;
         }
-
-        private Mutex inferenceBusyMutex = new Mutex();
+        
         private void CleanAndRestart() {
-            try {
-                while(!inferenceBusyMutex.WaitOne()) GameUtils.LogError("FAIL TO GRAB MUTEX!!");
+            foreach(SessionPool pool in pools) {
+                pool.LockedFromStarting = true;
+                pool.EnsureThreadIsStopped();
+                pool.DeleteAllSessions(false);
+            }
 
-                if(bg_thread != null && bg_thread.IsAlive) bg_thread.Abort();
-                if(pool != null) pool.DeleteAllSessions();
-            } finally {
-                inferenceBusyMutex.ReleaseMutex();
+            general_pool.DeleteAllSessions(true);
+
+            foreach(SessionPool pool in pools) {
+                pool.LockedFromStarting = false;
             }
         }
 
@@ -59,7 +66,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private void rawAudio(IAudioSource src, float[] samples, int len, int samplerate) {
             if(Settings.Disabled) return;
-
             
             float maxDistMultiplier = 1.0f;
             if(!AudioSourceOverrides.IsWhitelisted(src.GetUID())) {
@@ -67,79 +73,36 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             } else {
                 maxDistMultiplier = 2.0f;
             }
-
-
-
+            
             Vector3 remotePlayerPos = src.GetPosition();
             if((remotePlayerPos - localPosition).sqrMagnitude > (Settings.transcribe_range * Settings.transcribe_range * maxDistMultiplier * maxDistMultiplier)) return;
-
             
-            if(pool == null) {
-                pool = new SessionPool(samplerate);
-            }
-
-            if(bg_thread == null || (!bg_thread.IsAlive)) {
-                bg_thread = new Thread(run);
-                bg_thread.Start();
-            }
 
             try {
-                TranscriptSession session = pool.GetOrCreateSession(src);
+                TranscriptSession session = general_pool.GetOrCreateSession(src);
                 int eaten = session.EatSamples(samples, len);
                 if(eaten < samples.Length) {
                     GameUtils.LogWarn("Buffer full! Ate only " + eaten.ToString());
+                }
+
+                if(session.whitelisted && !pools[1].ContainsSession(session)) {
+                    pools[0].DeleteSession(session, false);
+                    pools[1].InsertSession(session);
+                    pools[1].EnsureThreadIsRunning();
+                }else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
+                    pools[1].DeleteSession(session, false);
+                    pools[0].InsertSession(session);
+                    pools[0].EnsureThreadIsRunning();
+                }else if(pools[0].ContainsSession(session)) {
+                    pools[0].EnsureThreadIsRunning();
+                }else if(pools[1].ContainsSession(session)) {
+                    pools[1].EnsureThreadIsRunning();
                 }
             }catch(Exception e) {
                 GameUtils.LogError(e.ToString());
             }
         }
         
-        /// <summary>
-        /// The background thread loop that calls for inference.
-        /// </summary>
-        private void run() {
-            while(true) {
-                Thread.Sleep(10);
-                try {
-                    while(!inferenceBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab mutex??");
-
-                    if(Settings.Disabled) continue;
-                    if(pool == null) continue;
-
-                    float time_now = Utils.GetTime();
-
-                    try {
-                        foreach(TranscriptSession session in pool.GetSessions()) {
-                            if(session == null) continue;
-                            
-                            if(session.GetSamplesPending() > 4000 || (time_now - session.last_activity > 0.1f && session.GetSamplesPending() > 0)) {
-                                // Time to empty the buffer by running inferrence
-                                session.RunInference();
-                            }
-
-
-                            if((time_now - session.last_activity) > 96.0) {
-                                // The player is no longer speaking, remove their session if they're not
-                                // whitelisted
-                                if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
-                                    GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
-                                    pool.DeleteSession(session);
-                                    break; // collection was modified, enumeration may not resume
-                                }
-                            } else if((time_now - session.last_activity) > 0.5f) {
-                                if(session.GetSamplesPending() > 0) session.RunInference();
-
-                                session.CommitSayingIfTooOld();
-                            }
-                        }
-                    } catch(Exception e) {
-                        GameUtils.LogError("In run(): " + e.ToString());
-                    }
-                } finally {
-                    inferenceBusyMutex.ReleaseMutex();
-                }
-            }
-        }
 
         /// <summary>
         /// The foreground tick method that should be called once every frame.
@@ -149,21 +112,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(VRC.SDKBase.Networking.LocalPlayer != null) {
                 localPosition = VRC.SDKBase.Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
             }
-            if(pool == null) return;
-
-            try {
-                foreach(TranscriptSession session in pool.GetSessions()) {
-                    try {
-                        session.Update();
-                    } catch(Exception e) {
-                        GameUtils.LogError(e.ToString());
-                    }
-                }
-            } catch(System.InvalidOperationException) {
-                // probably session has been added or removed, so ignore this
-
-            } catch(Exception e) {
-                GameUtils.Log("An exception has occurred in tick: " + e.ToString());
+            
+            foreach(SessionPool pool in pools) {
+                pool.Tick();
             }
         }
     }
