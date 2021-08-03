@@ -105,13 +105,15 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             buff.StartTranscribing();
             try {
-                bool final = recognizer.Recognize(buff.buffer, buff.buffer_head);
+                IVoiceRecognizer rec = recognizer;
+
+                bool final = rec.Recognize(buff.buffer, buff.buffer_head);
 
                 // It's possible after the long operation that we've been disposed, so exit silently
                 if(disposed) return;
 
                 if(active_saying == null) active_saying = new Saying();
-                active_saying.Update(recognizer.GetText(), final);
+                active_saying.Update(rec.GetText(), final);
 
                 if(final) CommitSaying();
             } finally {
@@ -121,6 +123,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         private void CommitSaying() {
+            if(disposed) return;
+
             if(active_saying != null) {
                 if(!active_saying.final && recognizer != null) {
                     // finalize it
@@ -129,7 +133,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 }
 
                 if(active_saying.fullTxt.Length > 0) {
-                    past_sayings.Add(active_saying);
+                    if(past_sayings != null) {
+                        past_sayings.Add(active_saying);
+                    }
                 }
             }
             active_saying = null;
