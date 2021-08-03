@@ -16,27 +16,18 @@ This mod was made possible by:
  * [Vosk](https://alphacephei.com/vosk/), the main speech recognition toolkit that works in real-time and provides small models
  * [badwords](https://github.com/web-mech/badwords), a list of English bad words
 
-## Building
-
-This section is for building the DLL, so you can skip this section if you already have it.
-
-Building this requires Visual Studio with SDK and targeting pack for .NET Framework 4.7.2
-
-Install VRChat and MelonLoader 0.4.3, and wait for it to complete the first-time launch.
-
-After this, open the Visual Studio project and add the missing references:
- * MelonLoader is located at: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\MelonLoader.dll`
- * Other assemblies are located in this folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\MelonLoader\Managed`
-
-Once you've added all of the missing references, switch to Release configuration and x64 platform and build.
-
-The build should succeed and you should now have `VRCLiveCaptionsMod.dll` in your x64 release binaries folder.
-
 ## Installation
 
-Ensure MelonLoader 0.4.3 (or higher) is installed and drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods` (or similar, depending on your VRChat game location).
+
+
+Ensure MelonLoader 0.4.3 (or higher) is installed.
+
+Download the latest GitHub release .dll file from [here](https://github.com/gt0777/VRCLiveCaptionsMod/releases), you may need to expand the Assets section to find the dll.
+
+Drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Mods` (or similar, depending on your VRChat game location).
 
 If you're unsure of your VRChat game location, rightclick VRChat in Steam, then navigate to Manage > Browse local files.
+
 
 You will need additional libraries for the mod to work. Download [libvosk](https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip) and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat` (in the same directory as the .exe)
 
