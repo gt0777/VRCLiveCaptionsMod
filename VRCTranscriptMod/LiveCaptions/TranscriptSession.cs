@@ -48,6 +48,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private int sample_rate;
 
+        public bool whitelisted = false;
+
 
         public TranscriptSession(IAudioSource src, int sample_rate) {
             audioSource = src;
@@ -69,6 +71,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 } finally {
                     inferrenceMutex.ReleaseMutex();
                 }
+            };
+
+            if(audioSource != null)
+                whitelisted = AudioSourceOverrides.IsWhitelisted(audioSource.GetUID());
+
+            AudioSourceOverrides.OnAddedToWhitelist += (uid) => {
+                if(audioSource == null) return;
+                if(uid.Equals(src.GetUID())) whitelisted = true;
+            };
+
+            AudioSourceOverrides.OnRemovedFromWhitelist += (uid) => {
+                if(audioSource == null) return;
+                if(uid.Equals(src.GetUID())) whitelisted = false;
             };
         }
 
@@ -235,11 +250,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// and there exists no other Sayings, then 3 seconds will be returned.
         /// </summary>
         /// <param name="idx_to_start_from">The Saying's index</param>
-        /// <returns>The minimum age of the Saying</returns>
+        /// <returns>The minimum age of the Saying. If +infinity, something has gone wrong</returns>
         private float GetNonsepMaxAge(int idx_to_start_from) {
+            if(past_sayings[idx_to_start_from] == null) return float.PositiveInfinity;
             if(idx_to_start_from + 1 >= past_sayings.Count) return past_sayings[idx_to_start_from].timeEnd;
 
             for(int i=idx_to_start_from+1; i<past_sayings.Count; i++) {
+                if(past_sayings[i - 1] == null || past_sayings[i] == null) return float.PositiveInfinity;
                 float prevEnd = past_sayings[i - 1].timeEnd;
                 float currStart = past_sayings[i].timeStart;
 
@@ -248,6 +265,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 }
             }
 
+            if(past_sayings[past_sayings.Count - 1] == null) return float.PositiveInfinity;
             return past_sayings[past_sayings.Count - 1].timeEnd;
         }
 

@@ -26,6 +26,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
     static class VoskUtil {
         public static string extractTextFromResult(string result) {
             try {
+                string spaceless = result.Replace(" ", "");
+                if(spaceless.Equals("{\"text\":\"\"}")) return "";
+                if(spaceless.Equals("{\"partial\":\"\"}")) return "";
+
                 string line_with_result = result.Split('\n').First(line => line.TrimStart().Replace(" ", "").StartsWith("\"partial\":") || line.TrimStart().Replace(" ", "").StartsWith("\"text\":"));
 
                 string text = line_with_result.Split('"')[3];
@@ -33,18 +37,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
                 return text;
             } catch(System.InvalidOperationException) {
                 GameUtils.LogError("INVALID RESULT GIVEN: " + result);
-                return "ERROR";
+                return "";
+            } catch(Exception) {
+                GameUtils.LogError("Failed to extract: " + result);
+                return "";
             }
         }
 
         // from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
-        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
-        {
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs) {
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
 
-            if (!dir.Exists)
-            {
+            if(!dir.Exists) {
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: "
                     + sourceDirName);
@@ -57,17 +62,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
 
             // Get the files in the directory and copy them to the new location.
             FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
-            {
+            foreach(FileInfo file in files) {
                 string tempPath = Path.Combine(destDirName, file.Name);
                 file.CopyTo(tempPath, false);
             }
 
             // If copying subdirectories, copy them and their contents to new location.
-            if (copySubDirs)
-            {
-                foreach (DirectoryInfo subdir in dirs)
-                {
+            if(copySubDirs) {
+                foreach(DirectoryInfo subdir in dirs) {
                     string tempPath = Path.Combine(destDirName, subdir.Name);
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }

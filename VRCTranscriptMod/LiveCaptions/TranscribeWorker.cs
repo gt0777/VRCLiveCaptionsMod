@@ -75,12 +75,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             
             if(pool == null) {
-                GameUtils.Log("Samplerate: " + samplerate.ToString());
                 pool = new SessionPool(samplerate);
             }
 
             if(bg_thread == null || (!bg_thread.IsAlive)) {
-                GameUtils.Log("Dead thread, restart");
                 bg_thread = new Thread(run);
                 bg_thread.Start();
             }
@@ -95,12 +93,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 GameUtils.LogError(e.ToString());
             }
         }
-
-        /// <summary>
-        /// Logging the number of sessions
-        /// </summary>
-        private float last_session_log = 0.0f;
-
+        
         /// <summary>
         /// The background thread loop that calls for inference.
         /// </summary>
@@ -116,15 +109,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                     float time_now = Utils.GetTime();
 
                     try {
-                        /*
-                        if(time_now - last_session_log > 8.0f) {
-                            GameUtils.Log(pool.GetSessions().Count.ToString() + " sessions");
-                            foreach(TranscriptSession session in pool.GetSessions()) {
-                                GameUtils.Log("Session - Last active " + (time_now - session.last_activity).ToString());
-                            }
-                            last_session_log = time_now;
-                        }
-                        */
                         foreach(TranscriptSession session in pool.GetSessions()) {
                             if(session == null) continue;
                             
@@ -135,20 +119,21 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
 
                             if((time_now - session.last_activity) > 96.0) {
-                                // The player is no longer speaking, remove their session
-                                GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
-                                pool.DeleteSession(session);
+                                // The player is no longer speaking, remove their session if they're not
+                                // whitelisted
+                                if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
+                                    GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
+                                    pool.DeleteSession(session);
+                                    break; // collection was modified, enumeration may not resume
+                                }
                             } else if((time_now - session.last_activity) > 0.5f) {
                                 if(session.GetSamplesPending() > 0) session.RunInference();
 
                                 session.CommitSayingIfTooOld();
                             }
                         }
-                    } catch(System.InvalidOperationException e) {
-                        // This can happen because the array was modified, so we ignore it.
-                        GameUtils.Log("InvalidOperationException, moving on " + e.ToString());
                     } catch(Exception e) {
-                        GameUtils.LogError(e.ToString());
+                        GameUtils.LogError("In run(): " + e.ToString());
                     }
                 } finally {
                     inferenceBusyMutex.ReleaseMutex();
@@ -175,8 +160,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                     }
                 }
             } catch(System.InvalidOperationException) {
-                // session has been added or removed, so ignore this
+                // probably session has been added or removed, so ignore this
 
+            } catch(Exception e) {
+                GameUtils.Log("An exception has occurred in tick: " + e.ToString());
             }
         }
     }
