@@ -52,7 +52,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private int sample_rate;
 
+#if DEBUG
         private TranscriptSessionDebugger debugger;
+#endif
 
         public bool whitelisted { get; private set; } = false;
         public bool disposed { get; private set; } = false;
@@ -94,7 +96,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 if(uid.Equals(src.GetUID())) whitelisted = false;
             };
 
+#if DEBUG
             debugger = new TranscriptSessionDebugger(src.GetFriendlyName());
+#endif
         }
 
         /// <summary>
@@ -118,7 +122,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
                 IVoiceRecognizer rec = recognizer;
 
+#if DEBUG
                 debugger.onSubmitSamples(buff.buffer, buff.buffer_head);
+#endif
+
                 bool final = rec.Recognize(buff.buffer, buff.buffer_head);
 
                 // It's possible after the long operation that we've been disposed, so exit silently
@@ -183,7 +190,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             audioBuffers = null;
             past_sayings = null;
 
+#if DEBUG
             debugger.cleanup();
+#endif
         }
 
         /// <summary>
