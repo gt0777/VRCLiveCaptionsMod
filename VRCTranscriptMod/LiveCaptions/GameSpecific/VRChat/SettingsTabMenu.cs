@@ -33,6 +33,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
 
 
         static Label model_info;
+        static Label update_info;
 
         static SubMenu submenu;
 
@@ -75,6 +76,23 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
                 "subtitleSizeIncrease");
 
             model_info = new Label(submenu.gameObject, new Vector3(4, 0), "", "model_info");
+
+            update_info = new Label(submenu.gameObject, new Vector3(5, 0), "", "update_info");
+            UiTooltip tooltip = update_info.gameObject.AddComponent<UiTooltip>();
+
+            string UpdateText = UpdateChecker.Check();
+            tooltip.field_Public_String_0 = UpdateText;
+
+            if(UpdateText.Contains("up-to-date")) {
+                update_info.TextComponent.text = "Up-to-date";
+            }else if(UpdateText.Contains("out of date")) {
+                update_info.TextComponent.text = "Out-of-date! Hover for more details.";
+                GameUtils.LogWarn(UpdateText);
+            } else if(UpdateText.Contains("failed")) {
+                update_info.TextComponent.text = "Failed to check for updates";
+                GameUtils.LogWarn(UpdateText);
+            }
+
 
             Settings.ModelName = "english-light";
 

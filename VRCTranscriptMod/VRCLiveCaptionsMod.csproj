@@ -556,6 +556,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LiveCaptions\GameSpecific\SemVer.cs" />
+    <Compile Include="LiveCaptions\GameSpecific\UpdateChecker.cs" />
     <Compile Include="LiveCaptions\TranscriptData\AudioBuffer.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Profanities.cs" />
     <Compile Include="LiveCaptions\TranscriptData\profanities\Slurs.cs" />
