@@ -98,16 +98,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             CommitSayingIfTooOld();
 
+            if(!inferrenceMutex.WaitOne()) return;
+
             AudioBuffer buff = GetFreeBufferForDigestion();
             if(buff == null) return;
-            if(!inferrenceMutex.WaitOne()) return;
+
             buff.StartTranscribing();
             try {
-                if(recognizer == null) return;
+                bool final = recognizer.Recognize(buff.buffer, buff.buffer_head);
+
+                // It's possible after the long operation that we've been disposed, so exit silently
+                if(disposed) return;
 
                 if(active_saying == null) active_saying = new Saying();
-
-                bool final = recognizer.Recognize(buff.buffer, buff.buffer_head);
                 active_saying.Update(recognizer.GetText(), final);
 
                 if(final) CommitSaying();
@@ -229,6 +232,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         /// <returns>The number of samples pending inference</returns>
         public int GetSamplesPending() {
+            if(disposed) return -1;
+
             AudioBuffer buff = GetFreeBufferForDigestion();
             if(buff == null) return -2;
 

@@ -88,16 +88,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 if(session.whitelisted && !pools[1].ContainsSession(session)) {
                     pools[0].DeleteSession(session, false);
                     pools[1].InsertSession(session);
-                    pools[1].EnsureThreadIsRunning();
-                }else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
+                } else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
                     pools[1].DeleteSession(session, false);
                     pools[0].InsertSession(session);
-                    pools[0].EnsureThreadIsRunning();
-                }else if(pools[0].ContainsSession(session)) {
-                    pools[0].EnsureThreadIsRunning();
-                }else if(pools[1].ContainsSession(session)) {
-                    pools[1].EnsureThreadIsRunning();
                 }
+
+                pools[session.whitelisted ? 1 : 0].EnsureThreadIsRunning();
             }catch(Exception e) {
                 GameUtils.LogError(e.ToString());
             }

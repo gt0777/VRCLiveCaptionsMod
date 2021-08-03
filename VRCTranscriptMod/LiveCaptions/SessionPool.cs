@@ -30,7 +30,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             this.samplerate = samplerate;
 
             GameUtils.GetProvider().AudioSourceRemoved += OnPlayerLeft;
-            AudioSourceOverrides.OnRemovedFromWhitelist += (uid) => DeleteSession(uid);
         }
 
         private void OnPlayerLeft(IAudioSource ply) {
@@ -60,8 +59,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private void DeleteByValue(TranscriptSession session, bool dispose) {
             foreach(string key in sessions.Keys) {
                 if(sessions[key] == session) {
-                    if(dispose)
+                    if(dispose) {
                         session.FullDispose();
+                    }
                     sessions.Remove(key);
                     return;
                 }
@@ -69,7 +69,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         public void DeleteSession(TranscriptSession session, bool dispose = true) {
-            if((session.audioSource == null) || (!DeleteSession(session.audioSource.GetUID()))) {
+            if((session.audioSource == null) || (!DeleteSession(session.audioSource.GetUID(), dispose))) {
                 DeleteByValue(session, dispose);
                 return;
             }
@@ -84,8 +84,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             TranscriptSession rec = sessions[uid];
 
-            if(dispose)
+            if(dispose) {
                 rec.FullDispose();
+            }
 
             sessions.Remove(uid);
 
@@ -107,7 +108,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             TranscriptSession rec = sessions[src.GetUID()];
 
             if(rec.disposed) {
-                DeleteSession(src);
+                DeleteSession(src, false);
                 return GetOrCreateSession(src);
             }
 
@@ -169,7 +170,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                             }
                         }
                     } catch(Exception e) {
-                        GameUtils.LogError("In Run(): " + e.ToString());
+                        // we don't really care about this error
+                        if(!e.Message.Contains("Collection was modified; enumeration"))
+                            GameUtils.LogError("In Run(): " + e.ToString());
                     }
                 } finally {
                     RunBusyMutex.ReleaseMutex();
