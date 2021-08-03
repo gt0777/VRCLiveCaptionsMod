@@ -37,6 +37,43 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
             }
         }
 
+        // from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // If the destination directory doesn't exist, create it.       
+            Directory.CreateDirectory(destDirName);
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            if (copySubDirs)
+            {
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                }
+            }
+        }
+
         private static void DownloadModel(string path, string url, string folder_name) {
             string tempPath = Path.GetTempPath();
             string tgtPath = tempPath + folder_name + ".zip";
@@ -45,6 +82,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
             WebClient client = new WebClient();
             client.DownloadFileCompleted += (sender, e) => {
                 try {
+                    if(Directory.Exists(tgtPathExtract)) {
+                        Directory.Delete(tgtPathExtract, true);
+                    }
+
                     ZipFile.ExtractToDirectory(tgtPath, tgtPathExtract);
                     File.Delete(tgtPath);
 
@@ -53,12 +94,18 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
                         GameUtils.LogError("Couldn't find the directory!");
                     }
 
-                    Directory.Move(dirName[0], path + folder_name);
+                    DirectoryCopy(dirName[0], path + folder_name, true);
                     GameUtils.Log("Installed " + folder_name);
                 } catch(Exception err) {
                     GameUtils.LogError("Extraction failed!! " + err.ToString());
                 } finally {
-                    Directory.Delete(tgtPathExtract);
+                    try {
+                        if (Directory.Exists(tgtPathExtract)) {
+                            Directory.Delete(tgtPathExtract, true);
+                        }
+                    } catch(Exception err) {
+                        GameUtils.LogError("Cleanup failed!! " + err.ToString());
+                    }
                 }
             };
 
