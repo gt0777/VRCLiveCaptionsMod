@@ -64,6 +64,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         private Vector3 localPosition = Vector3.zero;
 
+        private float lastEatLog = 0.0f;
+
         private void rawAudio(IAudioSource src, float[] samples, int len, int samplerate) {
             if(Settings.Disabled) return;
             
@@ -82,7 +84,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 TranscriptSession session = general_pool.GetOrCreateSession(src);
                 int eaten = session.EatSamples(samples, len);
                 if(eaten < samples.Length) {
-                    GameUtils.LogWarn("Buffer full! Ate only " + eaten.ToString());
+                    if((Utils.GetTime() - lastEatLog) > 0.5f) {
+                        GameUtils.LogWarn("Buffer full! Ate only " + eaten.ToString());
+                        lastEatLog = Utils.GetTime();
+                    }
                 }
 
                 if(session.whitelisted && !pools[1].ContainsSession(session)) {

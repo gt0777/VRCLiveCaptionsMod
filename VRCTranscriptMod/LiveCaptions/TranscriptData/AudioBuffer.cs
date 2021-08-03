@@ -34,7 +34,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
         public Mutex readWriteMutex = new Mutex();
 
         public bool beingTranscribed = false;
+        public bool queued = false;
+
         public float lastFillTime = 0.0f;
+
 
         public void StartTranscribing() {
             readWriteMutex.WaitOne();
@@ -45,6 +48,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
             readWriteMutex.ReleaseMutex();
             beingTranscribed = false;
             buffer_head = 0;
+
+            queued = false;
+        }
+
+        public bool ShouldBeQueued() {
+            return buffer_head > (buffer_size - 1000);
         }
     }
 }

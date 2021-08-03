@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
@@ -42,11 +43,16 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private List<Saying> past_sayings = new List<Saying>();
         private Saying active_saying;
 
-        private AudioBuffer[] audioBuffers = new AudioBuffer[4];
+        private Queue<AudioBuffer> ready_for_processing = new Queue<AudioBuffer>();
+        private Queue<AudioBuffer> ready_for_filling = new Queue<AudioBuffer>();
+        private List<AudioBuffer> audioBuffers = new List<AudioBuffer>();
+        private const int maxAudioBuffers = 16;
 
         private Mutex inferrenceMutex = new Mutex();
 
         private int sample_rate;
+
+        private TranscriptSessionDebugger debugger;
 
         public bool whitelisted { get; private set; } = false;
         public bool disposed { get; private set; } = false;
@@ -55,8 +61,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             audioSource = src;
             this.sample_rate = sample_rate;
 
-            for(int i=0; i<audioBuffers.Length; i++) {
-                audioBuffers[i] = new AudioBuffer();
+            for(int i=0; i<2; i++) {
+                AudioBuffer buff = new AudioBuffer();
+                audioBuffers.Add(buff);
+                ready_for_filling.Enqueue(audioBuffers[i]);
             }
 
             recognizer = GameUtils.GetVoiceRecognizer();
@@ -85,6 +93,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 if(audioSource == null) return;
                 if(uid.Equals(src.GetUID())) whitelisted = false;
             };
+
+            debugger = new TranscriptSessionDebugger(src.GetFriendlyName());
         }
 
         /// <summary>
@@ -98,15 +108,17 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             CommitSayingIfTooOld();
 
+            if(ready_for_processing.Count == 0) return;
+            AudioBuffer buff = ready_for_processing.Dequeue();
+
             if(!inferrenceMutex.WaitOne()) return;
 
-            AudioBuffer buff = GetFreeBufferForDigestion();
-            if(buff == null) return;
-
-            buff.StartTranscribing();
             try {
+                buff.StartTranscribing();
+
                 IVoiceRecognizer rec = recognizer;
 
+                debugger.onSubmitSamples(buff.buffer, buff.buffer_head);
                 bool final = rec.Recognize(buff.buffer, buff.buffer_head);
 
                 // It's possible after the long operation that we've been disposed, so exit silently
@@ -119,6 +131,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             } finally {
                 inferrenceMutex.ReleaseMutex();
                 buff.StopTranscribing();
+                ready_for_filling.Enqueue(buff);
             }
         }
 
@@ -169,24 +182,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             ui = null;
             audioBuffers = null;
             past_sayings = null;
-        }
 
-        private AudioBuffer GetFreeBufferForEating() {
-            float max_time = -500.0f;
-            AudioBuffer result = null;
-            foreach(AudioBuffer buff in audioBuffers) {
-                if(!buff.beingTranscribed) {
-                    if(buff.lastFillTime > max_time) {
-                        max_time = buff.lastFillTime;
-                        result = buff;
-                    }
-                }
-            }
-            return result;
-        }
-
-        private AudioBuffer GetFreeBufferForDigestion() {
-            return GetFreeBufferForEating(); //TODO: separate the logic
+            debugger.cleanup();
         }
 
         /// <summary>
@@ -194,17 +191,59 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         public float last_activity { get; private set; }
 
+
+        private void EnsureAdditionalBuffers() {
+            if(ready_for_filling.Count == 0) {
+                if(audioBuffers.Count >= maxAudioBuffers) return;
+
+                AudioBuffer buff = new AudioBuffer();
+                buff.lastFillTime = Utils.GetTime();
+                ready_for_filling.Enqueue(buff);
+                audioBuffers.Add(buff);
+
+                //GameUtils.Log("Allocated 1 extra buffer for " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
+            }
+        }
+
+        private float lastCleaning = 0.0f;
+        private void DeleteUnnecesssaryBuffersIfNeeded() {
+            if(audioBuffers.Count > 2) {
+                float time = Utils.GetTime();
+
+                if(time - lastCleaning < 5.0) return;
+                lastCleaning = time;
+
+                List<AudioBuffer> to_remove = new List<AudioBuffer>();
+                foreach(AudioBuffer buff in audioBuffers) {
+                    if(buff.queued || buff.buffer_head > 1) continue;
+                    if(!ready_for_filling.Contains(buff)) continue;
+
+                    if((time - buff.lastFillTime) > 10.0) {
+                        to_remove.Add(buff);
+                    }
+                }
+
+                audioBuffers = new List<AudioBuffer>(audioBuffers.Where(x => !to_remove.Contains(x)));
+                ready_for_filling = new Queue<AudioBuffer>(ready_for_filling.Where(x => !to_remove.Contains(x)));
+
+                if(to_remove.Count > 0)
+                    GameUtils.Log("Removed " + to_remove.Count + " buffers from " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
+            }
+        }
+
         /// <summary>
         /// Processes the given samples and saves them for later inference
         /// </summary>
         /// <param name="samples">The float sample array (values between -1.0 and 1.0)</param>
         /// <param name="len">Number of samples to read from the array</param>
         /// <returns>The number of samples that were actually sved,
-        ///     or -1 if the buffer mutex could not be obtained,
-        ///     or -2 if the buffer could not be obtained.</returns>
+        ///     or -1 if the buffer mutex could not be obtained</returns>
         public int EatSamples(float[] samples, int len) {
-            AudioBuffer buff = GetFreeBufferForEating();
-            if(buff == null) return -2;
+            EnsureAdditionalBuffers();
+
+            if(ready_for_filling.Count == 0) return 0;
+
+            AudioBuffer buff = ready_for_filling.Peek();
 
             if(!buff.readWriteMutex.WaitOne(1)) return -1;
             try {
@@ -230,20 +269,23 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             } finally {
                 buff.lastFillTime = last_activity;
                 buff.readWriteMutex.ReleaseMutex();
+                
+                if(buff.ShouldBeQueued()) {
+                    ready_for_filling.Dequeue();
+                    buff.queued = true;
+                    ready_for_processing.Enqueue(buff);
+                }
             }
         }
 
         /// <summary>
-        /// Returns the number of samples that are pending inference.
+        /// Returns the number of buffers that are pending inference.
         /// </summary>
-        /// <returns>The number of samples pending inference</returns>
-        public int GetSamplesPending() {
+        /// <returns>The number of buffers pending inference</returns>
+        public int GetBuffersPending() {
             if(disposed) return -1;
 
-            AudioBuffer buff = GetFreeBufferForDigestion();
-            if(buff == null) return -2;
-
-            return buff.buffer_head;
+            return ready_for_processing.Count;
         }
 
         /// <summary>
@@ -315,12 +357,18 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
 
+
         /// <summary>
         /// Updates everything that requires updating. This should be called
         /// once every frame.
         /// </summary>
         public void Update() {
+            if(disposed) return;
+
+            DeleteUnnecesssaryBuffersIfNeeded();
+
             if(audioSource == null) return;
+
 
             UpdateText();
 

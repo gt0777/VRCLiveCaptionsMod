@@ -36,7 +36,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public TranscriptSessionDebugger(string name) {
             this.name = name;
 #if DEBUG
-            fileStream = new FileStream("C:\\debug\\" + name, FileMode.CreateNew, FileAccess.Write);
+            fileStream = new FileStream("C:\\debug\\" + name, FileMode.Append, FileAccess.Write);
 #endif
         }
 
@@ -53,7 +53,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 #endif
         }
 
-        public void onDispose() {
+        public void createMarker() {
 #if DEBUG
             short[] fakeData = new short[4];
             fakeData[0] = System.Int16.MinValue;

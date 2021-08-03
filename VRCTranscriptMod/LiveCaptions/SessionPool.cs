@@ -149,11 +149,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         foreach(TranscriptSession session in GetSessions()) {
                             if(session == null) continue;
 
-                            if(session.GetSamplesPending() > 4000 || (time_now - session.last_activity > 0.1f && session.GetSamplesPending() > 0)) {
-                                // Time to empty the buffer by running inferrence
-                                session.RunInference();
-                            }
-
+                            session.RunInference();
 
                             if((time_now - session.last_activity) > 96.0) {
                                 // The player is no longer speaking, remove their session if they're not
@@ -164,7 +160,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                                     break; // collection was modified, enumeration may not resume
                                 }
                             } else if((time_now - session.last_activity) > 0.5f) {
-                                if(session.GetSamplesPending() > 0) session.RunInference();
+                                session.RunInference();
 
                                 session.CommitSayingIfTooOld();
                             }
