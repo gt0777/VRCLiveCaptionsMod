@@ -155,7 +155,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
         /// Sets the current model to the first one in existence by default
         /// </summary>
         private static void FirstInitialize() {
-            if(Settings.ModelExists()) return;
+            if(Settings.ModelExists() && (Settings.Vosk_model != null)) return;
             if(!Directory.Exists(Settings.model_directory)) return;
             string[] model_dirs = Directory.GetDirectories(Settings.model_directory);
 

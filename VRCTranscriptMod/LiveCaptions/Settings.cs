@@ -60,7 +60,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public static string ModelName {
             get => _modelName;
             set {
-                if(_modelName != value) {
+                if((_modelName != value || (Vosk_model == null)) && !Loading) {
                     if(loader == null || !loader.IsAlive) {
                         _modelName = value;
                         Loading = true;
