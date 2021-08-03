@@ -11,7 +11,7 @@ using MelonLoader;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("VRCLiveCaptionsMod")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCopyright("Copyright © gt0777 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -38,5 +38,5 @@ using MelonLoader;
 
 
 
-[assembly: MelonInfo(typeof(VRCLiveCaptionsMod.VRCLiveCaptionsModMain), "VRChat Live Captions mod", "0.1.0", "a")]
+[assembly: MelonInfo(typeof(VRCLiveCaptionsMod.VRCLiveCaptionsModMain), "VRChat Live Captions mod", "0.1.1", "gt0777")]
 [assembly: MelonGame("VRChat", "VRChat")]
