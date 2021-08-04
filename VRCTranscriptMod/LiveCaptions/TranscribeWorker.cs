@@ -82,6 +82,17 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             try {
                 TranscriptSession session = general_pool.GetOrCreateSession(src);
+
+                if(session.whitelisted && !pools[1].ContainsSession(session)) {
+                    if(pools[0].ContainsSession(session)) pools[0].DeleteSession(session, false);
+                    pools[1].InsertSession(session);
+                } else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
+                    if(pools[1].ContainsSession(session)) pools[1].DeleteSession(session, false);
+                    pools[0].InsertSession(session);
+                }
+
+                pools[session.whitelisted ? 1 : 0].EnsureThreadIsRunning();
+                
                 int eaten = session.EatSamples(samples, len);
                 if(eaten < samples.Length) {
                     if((Utils.GetTime() - lastEatLog) > 0.5f) {
@@ -89,17 +100,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         lastEatLog = Utils.GetTime();
                     }
                 }
-
-                if(session.whitelisted && !pools[1].ContainsSession(session)) {
-                    pools[0].DeleteSession(session, false);
-                    pools[1].InsertSession(session);
-                } else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
-                    pools[1].DeleteSession(session, false);
-                    pools[0].InsertSession(session);
-                }
-
-                pools[session.whitelisted ? 1 : 0].EnsureThreadIsRunning();
-            }catch(Exception e) {
+            } catch(Exception e) {
                 GameUtils.LogError(e.ToString());
             }
         }

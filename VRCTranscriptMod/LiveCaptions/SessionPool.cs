@@ -138,7 +138,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         private void Run() {
             while(true) {
-                Thread.Sleep(10);
+                Thread.Sleep(1);
                 try {
                     while(!RunBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab RunBusyMutex??");
                     if(Settings.Disabled) continue;
