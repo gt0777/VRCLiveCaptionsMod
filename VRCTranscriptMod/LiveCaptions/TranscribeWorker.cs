@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
@@ -29,24 +30,26 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
     /// </summary>
     public class TranscribeWorker {
         private SessionPool general_pool = new SessionPool();
-        private SessionPool[] pools = new SessionPool[2];
+        private SessionPool low_priority_pool = new SessionPool();
+        private Dictionary<string, SessionPool> high_priority_pools = new Dictionary<string, SessionPool>();
         
         public TranscribeWorker() {
-            GameUtils.GetProvider().AllAudioSourcesRemoved += () => CleanAndRestart();
+            GameUtils.GetProvider().AllAudioSourcesRemoved += CleanAndRestart;
             GameUtils.GetProvider().AudioEmitted += rawAudio;
 
             Settings.DisableChanging += (bool to) => {
                 if(to) CleanAndRestart();
             };
-
-            pools[0] = new SessionPool();
-            pools[1] = new SessionPool();
-
+            
             general_pool.LockedFromStarting = true;
         }
         
         private void CleanAndRestart() {
-            foreach(SessionPool pool in pools) {
+            low_priority_pool.LockedFromStarting = true;
+            low_priority_pool.EnsureThreadIsStopped();
+            low_priority_pool.DeleteAllSessions();
+
+            foreach(SessionPool pool in high_priority_pools.Values) {
                 pool.LockedFromStarting = true;
                 pool.EnsureThreadIsStopped();
                 pool.DeleteAllSessions(false);
@@ -54,9 +57,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             general_pool.DeleteAllSessions(true);
 
-            foreach(SessionPool pool in pools) {
-                pool.LockedFromStarting = false;
-            }
+            high_priority_pools.Clear();
+            low_priority_pool.LockedFromStarting = false;
         }
 
         /// <summary>
@@ -68,6 +70,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private void rawAudio(IAudioSource src, float[] samples, int len, int samplerate) {
             if(Settings.Disabled) return;
+            if(low_priority_pool.LockedFromStarting) return;
             
             float maxDistMultiplier = 1.0f;
             if(!AudioSourceOverrides.IsWhitelisted(src.GetUID())) {
@@ -78,25 +81,47 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             
             Vector3 remotePlayerPos = src.GetPosition();
             if((remotePlayerPos - localPosition).sqrMagnitude > (Settings.transcribe_range * Settings.transcribe_range * maxDistMultiplier * maxDistMultiplier)) return;
-            
+
 
             try {
                 TranscriptSession session = general_pool.GetOrCreateSession(src);
 
-                if(session.whitelisted && !pools[1].ContainsSession(session)) {
-                    if(pools[0].ContainsSession(session)) pools[0].DeleteSession(session, false);
-                    pools[1].InsertSession(session);
-                } else if(!session.whitelisted && !pools[0].ContainsSession(session)) {
-                    if(pools[1].ContainsSession(session)) pools[1].DeleteSession(session, false);
-                    pools[0].InsertSession(session);
+                SessionPool pool;
+                if(session.whitelisted) {
+                    if(!high_priority_pools.ContainsKey(src.GetUID())) {
+                        high_priority_pools[src.GetUID()] = new SessionPool();
+                        high_priority_pools[src.GetUID()].InsertSession(session);
+                        GameUtils.LogDebug("Create new high-priority session for " + src.GetFriendlyName());
+                    }
+                    if(low_priority_pool.ContainsSession(session)) {
+                        low_priority_pool.EnsureThreadIsStopped();
+                        low_priority_pool.DeleteSession(session, false);
+                        GameUtils.LogDebug("Remove from low-priority pool " + src.GetFriendlyName());
+                    }
+
+                    pool = high_priority_pools[src.GetUID()];
+                } else {
+                    if(!low_priority_pool.ContainsSession(session)) {
+                        low_priority_pool.InsertSession(session);
+                        GameUtils.LogDebug("Insert to low-priority pool " + src.GetFriendlyName());
+                    }
+                    if(high_priority_pools.ContainsKey(src.GetUID())) {
+                        high_priority_pools[src.GetUID()].EnsureThreadIsStopped();
+                        high_priority_pools[src.GetUID()].DeleteSession(session, false);
+                        high_priority_pools.Remove(src.GetUID());
+                        GameUtils.LogDebug("Delete high-priority pool " + src.GetFriendlyName());
+                    }
+
+                    pool = low_priority_pool;
                 }
 
-                pools[session.whitelisted ? 1 : 0].EnsureThreadIsRunning();
+                pool.EnsureThreadIsRunning();
                 
                 int eaten = session.EatSamples(samples, len);
                 if(eaten < samples.Length) {
                     if((Utils.GetTime() - lastEatLog) > 0.5f) {
-                        GameUtils.LogWarn("Buffer full! Ate only " + eaten.ToString());
+                        // TODO: UI Indicator
+                        GameUtils.LogWarn(src.GetFriendlyName() + ": Buffer full! Ate only " + eaten.ToString());
                         lastEatLog = Utils.GetTime();
                     }
                 }
@@ -114,9 +139,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(VRC.SDKBase.Networking.LocalPlayer != null) {
                 localPosition = VRC.SDKBase.Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
             }
-            
-            foreach(SessionPool pool in pools) {
+
+            low_priority_pool.Tick();
+
+            foreach(string key in high_priority_pools.Keys) {
+                SessionPool pool = high_priority_pools[key];
+
                 pool.Tick();
+
+                if(pool.GetSessions().Count == 0) {
+                    GameUtils.LogDebug("No count. Delete sessionPool " + key);
+                    high_priority_pools.Remove(key);
+                    break; // can't continue loop because the collection was modified
+                }
             }
         }
     }

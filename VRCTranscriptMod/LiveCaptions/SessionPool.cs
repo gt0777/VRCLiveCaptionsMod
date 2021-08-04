@@ -103,7 +103,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public TranscriptSession GetOrCreateSession(IAudioSource src) {
             if(!sessions.ContainsKey(src.GetUID())) {
+#if DEBUG
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+#endif
                 InitializeSession(src);
+#if DEBUG
+                GameUtils.Log("Time taken to init session: " + (watch.ElapsedMilliseconds).ToString());
+#endif
             }
             TranscriptSession rec = sessions[src.GetUID()];
 
@@ -139,8 +145,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private void Run() {
             while(true) {
                 Thread.Sleep(1);
+                while(!RunBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab RunBusyMutex??");
                 try {
-                    while(!RunBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab RunBusyMutex??");
                     if(Settings.Disabled) continue;
 
                     float time_now = Utils.GetTime();

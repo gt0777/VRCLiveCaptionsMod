@@ -49,6 +49,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private const int maxAudioBuffers = 16;
 
         private Mutex inferrenceMutex = new Mutex();
+        private Mutex useVoiceRecognizerMutex = new Mutex();
 
         private int sample_rate;
 
@@ -60,6 +61,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public bool disposed { get; private set; } = false;
 
         public TranscriptSession(IAudioSource src, int sample_rate) {
+            last_activity = Utils.GetTime();
             audioSource = src;
             this.sample_rate = sample_rate;
 
@@ -69,15 +71,26 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 ready_for_filling.Enqueue(audioBuffers[i]);
             }
 
-            recognizer = GameUtils.GetVoiceRecognizer();
-            if(recognizer != null) recognizer.Init(this.sample_rate);
+
+            while(!useVoiceRecognizerMutex.WaitOne()) { }
+            try {
+                recognizer = GameUtils.GetVoiceRecognizer();
+                if(recognizer != null) recognizer.Init(this.sample_rate);
+            } finally {
+                useVoiceRecognizerMutex.ReleaseMutex();
+            }
 
             VoiceRecognizerEvents.VoiceRecognizerChanged += () => {
                 if(!inferrenceMutex.WaitOne()) return;
                 try {
                     CommitSaying();
-                    recognizer = GameUtils.GetVoiceRecognizer();
-                    if(recognizer != null) recognizer.Init(this.sample_rate);
+                    while(!useVoiceRecognizerMutex.WaitOne()) { }
+                    try {
+                        recognizer = GameUtils.GetVoiceRecognizer();
+                        if(recognizer != null) recognizer.Init(this.sample_rate);
+                    } finally {
+                        useVoiceRecognizerMutex.ReleaseMutex();
+                    }
                 } finally {
                     inferrenceMutex.ReleaseMutex();
                 }
@@ -120,19 +133,25 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             try {
                 buff.StartTranscribing();
 
-                IVoiceRecognizer rec = recognizer;
+                bool final;
+                while(!useVoiceRecognizerMutex.WaitOne()) { }
+                try {
+                    IVoiceRecognizer rec = recognizer;
 
 #if DEBUG
-                debugger.onSubmitSamples(buff.buffer, buff.buffer_head);
+                    debugger.onSubmitSamples(buff.buffer, buff.buffer_head);
 #endif
 
-                bool final = rec.Recognize(buff.buffer, buff.buffer_head);
+                    final = rec.Recognize(buff.buffer, buff.buffer_head);
 
-                // It's possible after the long operation that we've been disposed, so exit silently
-                if(disposed) return;
+                    // It's possible after the long operation that we've been disposed, so exit silently
+                    if(disposed) return;
 
-                if(active_saying == null) active_saying = new Saying();
-                active_saying.Update(rec.GetText(), final);
+                    if(active_saying == null) active_saying = new Saying();
+                    active_saying.Update(rec.GetText(), final);
+                } finally {
+                    useVoiceRecognizerMutex.ReleaseMutex();
+                }
 
                 if(final) CommitSaying();
             } finally {
@@ -146,13 +165,19 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(disposed) return;
 
             if(active_saying != null) {
-                if(!active_saying.final && recognizer != null) {
-                    // finalize it
-                    recognizer.Flush();
-                    active_saying.Update(recognizer.GetText(), true);
+                while(!useVoiceRecognizerMutex.WaitOne()) { }
+                try {
+                    if(!active_saying.final && recognizer != null) {
+                        // finalize it
+
+                        recognizer.Flush();
+                        active_saying.Update(recognizer.GetText(), true);
+                    }
+                } finally {
+                    useVoiceRecognizerMutex.ReleaseMutex();
                 }
 
-                if(active_saying.fullTxt.Length > 0) {
+                if(active_saying != null && active_saying.fullTxt.Length > 0) {
                     if(past_sayings != null) {
                         past_sayings.Add(active_saying);
                     }
@@ -184,7 +209,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public void FullDispose() {
             disposed = true;
 
-            recognizer = null;
+            while(!useVoiceRecognizerMutex.WaitOne()) { }
+            try {
+                recognizer = null;
+            } finally {
+                useVoiceRecognizerMutex.ReleaseMutex();
+            }
             if(ui != null) ui.Dispose();
             ui = null;
             audioBuffers = null;
@@ -235,8 +265,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 audioBuffers = new List<AudioBuffer>(audioBuffers.Where(x => !to_remove.Contains(x)));
                 ready_for_filling = new Queue<AudioBuffer>(ready_for_filling.Where(x => !to_remove.Contains(x)));
 
-                if(to_remove.Count > 0)
-                    GameUtils.Log("Removed " + to_remove.Count + " buffers from " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
+                //if(to_remove.Count > 0)
+                //    GameUtils.Log("Removed " + to_remove.Count + " buffers from " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
             }
         }
 

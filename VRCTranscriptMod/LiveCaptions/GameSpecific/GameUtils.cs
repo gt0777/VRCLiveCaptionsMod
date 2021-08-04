@@ -134,6 +134,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
         public static void LogError(string s) {
             MelonLogger.Error(s);
         }
+
+        public static void LogDebug(string s) {
+#if DEBUG
+            Log(s);
+#endif
+        }
         
         public static IVoiceRecognizer GetVoiceRecognizer() {
             if(Settings.Vosk_model == null) return null;
