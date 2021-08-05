@@ -153,7 +153,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
                 if(final) {
                     CommitSaying();
+#if DEBUG
                     debugger.createMarker(true);
+#endif
                 }
             } finally {
                 inferrenceMutex.ReleaseMutex();

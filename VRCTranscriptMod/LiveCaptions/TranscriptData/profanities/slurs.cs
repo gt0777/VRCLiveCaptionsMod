@@ -68,6 +68,8 @@
 
 
 
+using System.Collections.Generic;
+
 namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
     public static class Slurs {
         public static readonly string[] words = {
@@ -91,5 +93,22 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
             "slut",
             "sluttish"
         };
+
+        private static Dictionary<string, bool> BadWordDict = null;
+        private static void Init() {
+            BadWordDict = new Dictionary<string, bool>();
+            foreach(string word in words) {
+                BadWordDict[word.ToLower()] = true;
+                BadWordDict[word.ToLower() + "s"] = true;
+                BadWordDict[word.ToLower() + "es"] = true;
+                BadWordDict[word.ToLower() + "ing"] = true;
+            }
+        }
+
+        public static bool IsWordBad(string word) {
+            if(BadWordDict == null) Init();
+
+            return BadWordDict.ContainsKey(word);
+        }
     }
 }

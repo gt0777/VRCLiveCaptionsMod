@@ -29,28 +29,15 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
             SLURS,
             ALL
         };
-
-        private static bool WordIsBad(string word, string[] badwords) {
-            string a = word.ToLower();
-            foreach(string badword in badwords) {
-                string b = badword.ToLower();
-
-                // TODO: this sucks, and is quite inefficient
-                if(a.Equals(b) || a.Equals(b + "s") || a.Equals(b + "es") || a.Equals(b + "ing")) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static string FilterWithWordList(string input, string[] badwords) {
+        
+        private static string FilterWithWordList(string input, Func<string, bool> IsBadWord) {
             string output = "";
 
             string[] lines = input.Split('\n');
             foreach(string line in lines) {
                 string[] words = line.Split(' ');
                 foreach(string word in words) {
-                    output = output + (WordIsBad(word, badwords) ? BadWordReplacement : word) + " ";
+                    output = output + (IsBadWord(word.ToLower()) ? BadWordReplacement : word) + " ";
                 }
                 output = output + '\n';
             }
@@ -65,12 +52,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
             switch(level) {
                 case FilterLevel.ALL:
                     output = FilterWithWordList(output,
-                        TranscriptData.profanities.Profanities.words);
+                        TranscriptData.profanities.Profanities.IsWordBad);
                     goto case FilterLevel.SLURS;
 
                 case FilterLevel.SLURS:
                     output = FilterWithWordList(output,
-                        TranscriptData.profanities.Slurs.words);
+                        TranscriptData.profanities.Slurs.IsWordBad);
                     goto case FilterLevel.NONE;
 
                 case FilterLevel.NONE:
