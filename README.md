@@ -19,7 +19,6 @@ This mod was made possible by:
 ## Installation
 
 
-
 Ensure MelonLoader 0.4.3 (or higher) is installed.
 
 Download the latest GitHub release .dll file from [here](https://github.com/gt0777/VRCLiveCaptionsMod/releases), you may need to expand the Assets section to find the dll.
@@ -28,15 +27,7 @@ Drag `VRCLiveCaptionsMod.dll` to your VRChat Mods folder: `C:\Program Files (x86
 
 If you're unsure of your VRChat game location, rightclick VRChat in Steam, then navigate to Manage > Browse local files.
 
-
-You will need additional libraries for the mod to work. Download [libvosk](https://github.com/alphacep/vosk-api/releases/download/v0.3.30/vosk-win64-0.3.30.zip) and drag the 4 DLL files into the VRChat folder: `C:\Program Files (x86)\Steam\steamapps\common\VRChat` (in the same directory as the .exe)
-
-![Screenshot of where to put the files](https://i.imgur.com/JcoPz5x.png)
-
-The game should successfully launch now, and the live captions tab should be accessible within the Quick Menu.
-* If there is no Live Captions tab button, you probably didn't install the mod properly. Check the log file for more details.
-* If the Live Captions tab button is there, but clicking on it doesn't do anything, then it's likely failing to load the additional libvosk libraries. Ensure they're located in the same folder as VRChat.exe as seen in the screenshot above.
-
+On first launch, the mod should automatically download some dependencies for you. Once you're in-game, you should see a new tab in your quickmenu:
 
 ![Screenshot of the Live Captions quickmenu tab](https://i.imgur.com/yc1AyzA.png)
 
@@ -55,11 +46,11 @@ Your installed models will be listed in the VRChat quick menu under the Live Cap
 
 ## Usage
 
-Use the quick menu and click on someone to whitelist them for live captioning specifically.
-
-Otherwise, you can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you. If you whitelist someone, the range extends to about 12 meters. 
+You can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you.
 
 The Range option is not recommended with large models.
+
+In the user details quickmenu, you should also see a new option for enabling high-priority captioning. You must enable this per-user and this will prioritize their captioning over others.
 
 The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time as the person speaks more. The session gets reset after about 2 minutes of no activity (no speaking or out of range) to save on memory.
 
