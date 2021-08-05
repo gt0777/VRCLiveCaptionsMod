@@ -5,7 +5,7 @@ VRC-Mods license: LGPL v3
 
 VRC-Mods is Copyright (c) 2021 loukylor.
 
-This mod links to the VRChatUtilityKit mod.
+This mod uses a fork of VRChatUtilityKit with emmVRC logging disabled for better privacy. See the VRChatUtilityKit folder.
 
 ## Files
 
@@ -21,7 +21,7 @@ Vosk-API license: Apache-2.0 License
 
 Vosk-API is Copyright (c) 2021 Alpha Cephei Inc
 
-This mod links to the Vosk-API library via NuGet.
+This mod uses Vosk for voice recognition. See the Vosk folder.
 
 # badwords [MIT]
 badwords repository: https://github.com/web-mech/badwords

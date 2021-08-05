@@ -33,10 +33,10 @@ using MelonLoader;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.1.3")]
-[assembly: AssemblyFileVersion("0.0.1.3")]
+[assembly: AssemblyVersion("0.0.1.4")]
+[assembly: AssemblyFileVersion("0.0.1.4")]
 
 
 
-[assembly: MelonInfo(typeof(VRCLiveCaptionsMod.VRCLiveCaptionsModMain), "VRChat Live Captions mod", "0.1.3", "gt0777", "https://github.com/gt0777/VRCLiveCaptionsMod")]
+[assembly: MelonInfo(typeof(VRCLiveCaptionsMod.VRCLiveCaptionsModMain), "VRChat Live Captions mod", "0.1.4", "gt0777", "https://github.com/gt0777/VRCLiveCaptionsMod")]
 [assembly: MelonGame("VRChat", "VRChat")]
