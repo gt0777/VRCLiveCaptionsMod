@@ -230,6 +230,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
                 File.Copy(folderWithContents + file.filename, path + file.filename);
             }
 
+            try {
+                Directory.Delete(extractPath, true);
+            } catch(Exception e) {
+                GameUtils.LogWarn("Failed to clean up: " + e.Message);
+            }
+
+
             GameUtils.Log("Successfully installed dependencies!");
         }
     }
