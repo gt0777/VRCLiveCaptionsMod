@@ -46,19 +46,19 @@ Your installed models will be listed in the VRChat quick menu under the Live Cap
 
 ## Usage
 
-You can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you.
+You can enable the Range option in the quick menu Live Captions tab to enable live captioning for everyone within a 6 meter radius of you. This may be completely unusable with large models.
 
-The Range option is not recommended with large models.
+In the user details quickmenu, you should also see a new option for enabling high-priority captioning. You can enable this per-user and this will prioritize their captioning over others.
 
-In the user details quickmenu, you should also see a new option for enabling high-priority captioning. You must enable this per-user and this will prioritize their captioning over others.
+## Accuracy
 
-The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time as the person speaks more. The session gets reset after about 2 minutes of no activity (no speaking or out of range) to save on memory.
+The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time as the person speaks more. The session gets reset after about 2 minutes of no activity (no speaking or out of range) to save on memory, or 10 minutes if they're high-priority.
 
-Most of the models have been trained on speech from places like audiobooks, so it will work best if the other person speaks clearly like they're an audiobook narrator and avoids making other kinds of noises (such as laughing, squeaking, playing music, etc)
+Most of the models have been trained on speech from places like audiobooks, so it will work best if the other person speaks clearly like they're an audiobook narrator and avoids making other kinds of noises (such as laughing, squeaking, playing music, etc). It works better with some voices and accents over others.
 
-The current models don't have any detection for laughing, applause, or music, so you may get a bunch of nonsense words in such cases.
+The current models don't have any detection for laughing, applause, music, or foreign languages, so you may get a bunch of nonsense words in such cases.
 
-VRChat may consume a significantly higher amount of memory with this mod enabled. You may need to close down other applications such as browsers to avoid hitting the pagefile, but this all depends on your system specifications. Try monitoring your memory usage when you start using this mod.
+Sadly, it can often mistake words that sound similar (for example, "text to speech" can suddenly become "texas beach"), so don't overly rely on the captions! Especially if the live caption is vulgar or offensive - it may have just misunderstood what was being said!
 
 ## Licensing
 
