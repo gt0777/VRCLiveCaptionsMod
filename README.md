@@ -1,6 +1,18 @@
-# VRC Live Captions Mod
+***
 
-This mod adds live captions to VRChat voice chat. This is an accessibility tool, intended to help those who are hard of hearing or deaf, but it may also be useful for other people who simply prefer seeing subtitles.
+<h1 align="center">
+VRC Live Captions Mod
+</h1>
+
+<p align="center">
+accessibility mod for VRChat to display live captions when people speak
+</p>
+
+***
+
+## Info
+
+This is an accessibility tool, intended to help those who are hard of hearing or deaf, but it may also be useful for other people who simply prefer seeing subtitles.
 
 ![Demonstration screenshot](https://i.imgur.com/4euvS07.png)
 
@@ -33,7 +45,7 @@ On first launch, the mod should automatically download some dependencies for you
 
 ## Vosk model installation
 
-By default, the english-light model (vosk-model-small-en-us-0.15, Apache 2.0) will be automatically downloaded and installed into the Models directory. If this is fine and you don't need any additional languages or different English models, you can skip this section.
+By default, the lightweight english-light model (vosk-model-small-en-us-0.15, Apache 2.0) will be automatically downloaded and installed into the Models directory. If this is fine and you don't need any additional languages or different English models, you can skip this section.
 
 The Models directory `C:\Program Files (x86)\Steam\steamapps\common\VRChat\Models\` (or similar, depending on your VRChat game location) gets automatically created upon first launch.
 
@@ -50,6 +62,12 @@ You can enable the Range option in the quick menu Live Captions tab to enable li
 
 In the user details quickmenu, you should also see a new option for enabling high-priority captioning. You can enable this per-user and this will prioritize their captioning over others.
 
+## Performance
+
+There should be little to no performance hit when using lightweight models. However, you may suffer a ~300ms hiccup when a new player starts talking.
+
+When using a lightweight model, the captions should be pretty much in sync with the voice. In some cases, it may even be ahead of the voice due to the weird way VRChat audio works.
+
 ## Accuracy
 
 The live caption accuracy may be worse at first when a new player has joined or when you've just enabled captioning, but it should get better over time as the person speaks more. The session gets reset after about 2 minutes of no activity (no speaking or out of range) to save on memory, or 10 minutes if they're high-priority.
@@ -59,6 +77,19 @@ Most of the models have been trained on speech from places like audiobooks, so i
 The current models don't have any detection for laughing, applause, music, or foreign languages, so you may get a bunch of nonsense words in such cases.
 
 Sadly, it can often mistake words that sound similar (for example, "text to speech" can suddenly become "texas beach"), so don't overly rely on the captions! Especially if the live caption is vulgar or offensive - it may have just misunderstood what was being said!
+
+## Issues
+
+If your PC can't keep up with the number of players or using a heavy model, you will get messages like this in your MelonLoader console.
+
+![Buffer overflow example](https://i.imgur.com/JLVTdvU.png)
+
+In this case, the captions will likely be inaccurate or slow. You may need to turn off the Range option and manually prioritize people with whom you're talking.
+
+If you're using a heavier model, you may want to switch to a more lightweight model.
+
+
+
 
 ## Licensing
 
