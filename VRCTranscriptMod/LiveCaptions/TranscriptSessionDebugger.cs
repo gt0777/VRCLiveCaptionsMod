@@ -53,14 +53,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 #endif
         }
 
-        public void createMarker() {
+        public void createMarker(bool alwaysMin = false) {
 #if DEBUG
             short[] fakeData = new short[4];
             fakeData[0] = System.Int16.MinValue;
             fakeData[2] = System.Int16.MinValue;
 
-            fakeData[1] = System.Int16.MaxValue;
-            fakeData[3] = System.Int16.MaxValue;
+            fakeData[1] = alwaysMin ? fakeData[0] : System.Int16.MaxValue;
+            fakeData[3] = alwaysMin ? fakeData[0] : System.Int16.MaxValue;
 
             onSubmitSamples(fakeData, 4);
 #endif

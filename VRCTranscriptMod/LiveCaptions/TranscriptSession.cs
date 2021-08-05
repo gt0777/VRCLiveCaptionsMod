@@ -123,8 +123,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(disposed) return;
             if(recognizer == null) return;
 
-            CommitSayingIfTooOld();
-
             if(ready_for_processing.Count == 0) return;
             AudioBuffer buff = ready_for_processing.Dequeue();
 
@@ -153,7 +151,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                     useVoiceRecognizerMutex.ReleaseMutex();
                 }
 
-                if(final) CommitSaying();
+                if(final) {
+                    CommitSaying();
+                    debugger.createMarker(true);
+                }
             } finally {
                 inferrenceMutex.ReleaseMutex();
                 buff.StopTranscribing();
@@ -169,9 +170,11 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 try {
                     if(!active_saying.final && recognizer != null) {
                         // finalize it
-
                         recognizer.Flush();
                         active_saying.Update(recognizer.GetText(), true);
+#if DEBUG
+                        debugger.createMarker();
+#endif
                     }
                 } finally {
                     useVoiceRecognizerMutex.ReleaseMutex();
@@ -187,11 +190,31 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         /// <summary>
+        /// This flushes the current audio buffer.
+        /// This should be called when there has been some silence.
+        /// </summary>
+        public void FlushCurrentAudio(){
+            if (ready_for_filling.Count == 0) return;
+
+            AudioBuffer buff = ready_for_filling.Peek();
+            buff.readWriteMutex.WaitOne();
+            try {
+                if(buff.buffer_head > 2) {
+                    ready_for_filling.Dequeue();
+                    buff.queued = true;
+                    ready_for_processing.Enqueue(buff);
+                }
+            } finally {
+                buff.readWriteMutex.ReleaseMutex();
+            }
+        }
+
+        /// <summary>
         /// Finalizes and flushes the active Saying if it's too old. This should be called
         /// when there has been some silence.
         /// </summary>
         public void CommitSayingIfTooOld() {
-            if(active_saying != null)
+            if(active_saying != null && ready_for_processing.Count == 0)
                 if((Utils.GetTime() - active_saying.timeEnd) > sepAge) CommitSaying();
         }
 

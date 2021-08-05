@@ -161,13 +161,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                                 // The player is no longer speaking, remove their session if they're not
                                 // whitelisted
                                 if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
-                                    GameUtils.Log(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
+                                    GameUtils.LogDebug(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
                                     DeleteSession(session);
                                     break; // collection was modified, enumeration may not resume
                                 }
-                            } else if((time_now - session.last_activity) > 0.5f) {
+                            } else if((time_now - session.last_activity) > 0.3f) {
+                                session.FlushCurrentAudio();
                                 session.RunInference();
-
                                 session.CommitSayingIfTooOld();
                             }
                         }
