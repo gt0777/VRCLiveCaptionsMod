@@ -89,6 +89,11 @@ In this case, the captions will likely be inaccurate or slow. You may need to tu
 If you're using a heavier model, you may want to switch to a more lightweight model.
 
 
+## Community
+
+Join the Discord server:
+
+[Discord](https://discord.gg/FDGKxVFFB3)
 
 
 ## Licensing

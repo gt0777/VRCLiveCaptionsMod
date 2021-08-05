@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -83,7 +84,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             VoiceRecognizerEvents.VoiceRecognizerChanged += () => {
                 if(!inferrenceMutex.WaitOne()) return;
                 try {
-                    CommitSaying();
+                    try {
+                        CommitSaying();
+                    } catch(Exception) { }
+
                     while(!useVoiceRecognizerMutex.WaitOne()) { }
                     try {
                         recognizer = GameUtils.GetVoiceRecognizer();
