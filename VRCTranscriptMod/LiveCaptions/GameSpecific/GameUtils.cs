@@ -68,6 +68,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
         public event Action AllAudioSourcesRemoved;
 
         public VRChatGameProvider() {
+            string folder = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\";
+            VoskUtil.EnsureDependencies(folder);
+
             USpeakHooker.Init();
             USpeakHooker.OnRawAudio += OnRawAudioReceivedFromUSpeak;
 
