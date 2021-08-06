@@ -40,25 +40,30 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             Settings.DisableChanging += (bool to) => {
                 if(to) CleanAndRestart();
             };
-            
-            general_pool.LockedFromStarting = true;
+
+            general_pool.EnsureTaskIsStopped();
         }
-        
+
+        private bool halted = false;
+
         private void CleanAndRestart() {
-            low_priority_pool.LockedFromStarting = true;
-            low_priority_pool.EnsureThreadIsStopped();
+            halted = true;
+
+            low_priority_pool.EnsureTaskIsStopped();
             low_priority_pool.DeleteAllSessions();
 
             foreach(SessionPool pool in high_priority_pools.Values) {
-                pool.LockedFromStarting = true;
-                pool.EnsureThreadIsStopped();
+                pool.EnsureTaskIsStopped();
                 pool.DeleteAllSessions(false);
             }
 
             general_pool.DeleteAllSessions(true);
 
             high_priority_pools.Clear();
-            low_priority_pool.LockedFromStarting = false;
+
+            low_priority_pool.AllowTaskToRunAgain();
+
+            halted = false;
         }
 
         /// <summary>
@@ -69,8 +74,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private float lastEatLog = 0.0f;
 
         private void rawAudio(IAudioSource src, float[] samples, int len, int samplerate) {
-            if(Settings.Disabled) return;
-            if(low_priority_pool.LockedFromStarting) return;
+            if(Settings.Disabled || halted) return;
             
             float maxDistMultiplier = 1.0f;
             if(!AudioSourceOverrides.IsWhitelisted(src.GetUID())) {
@@ -94,9 +98,11 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         GameUtils.LogDebug("Create new high-priority session for " + src.GetFriendlyName());
                     }
                     if(low_priority_pool.ContainsSession(session)) {
-                        low_priority_pool.EnsureThreadIsStopped();
+                        low_priority_pool.EnsureTaskIsStopped();
                         low_priority_pool.DeleteSession(session, false);
                         GameUtils.LogDebug("Remove from low-priority pool " + src.GetFriendlyName());
+
+                        low_priority_pool.AllowTaskToRunAgain();
                     }
 
                     pool = high_priority_pools[src.GetUID()];
@@ -106,7 +112,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         GameUtils.LogDebug("Insert to low-priority pool " + src.GetFriendlyName());
                     }
                     if(high_priority_pools.ContainsKey(src.GetUID())) {
-                        high_priority_pools[src.GetUID()].EnsureThreadIsStopped();
+                        high_priority_pools[src.GetUID()].EnsureTaskIsStopped();
                         high_priority_pools[src.GetUID()].DeleteSession(session, false);
                         high_priority_pools.Remove(src.GetUID());
                         GameUtils.LogDebug("Delete high-priority pool " + src.GetFriendlyName());
@@ -114,8 +120,6 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
                     pool = low_priority_pool;
                 }
-
-                pool.EnsureThreadIsRunning();
                 
                 int eaten = session.EatSamples(samples, len);
                 if(eaten < samples.Length) {
