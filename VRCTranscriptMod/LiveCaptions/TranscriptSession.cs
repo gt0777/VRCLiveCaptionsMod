@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -44,8 +45,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private List<Saying> past_sayings = new List<Saying>();
         private Saying active_saying;
 
-        private Queue<AudioBuffer> ready_for_processing = new Queue<AudioBuffer>();
-        private Queue<AudioBuffer> ready_for_filling = new Queue<AudioBuffer>();
+        private ConcurrentQueue<AudioBuffer> ready_for_processing = new ConcurrentQueue<AudioBuffer>();
+        private ConcurrentQueue<AudioBuffer> ready_for_filling = new ConcurrentQueue<AudioBuffer>();
         private List<AudioBuffer> audioBuffers = new List<AudioBuffer>();
         private const int maxAudioBuffers = 16;
 
@@ -127,8 +128,11 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(disposed) return;
             if(recognizer == null) return;
 
-            if(ready_for_processing.Count == 0) return;
-            AudioBuffer buff = ready_for_processing.Dequeue();
+            AudioBuffer buff;
+            lock(ready_for_processing) {
+                if(ready_for_processing.Count == 0) return;
+                if(!ready_for_processing.TryDequeue(out buff)) return;
+            }
 
             if(!inferrenceMutex.WaitOne()) return;
 
@@ -171,27 +175,27 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private void CommitSaying() {
             if(disposed) return;
 
-            if(active_saying != null) {
-                while(!useVoiceRecognizerMutex.WaitOne()) { }
-                try {
-                    if(!active_saying.final && recognizer != null) {
-                        // finalize it
-                        recognizer.Flush();
-                        active_saying.Update(recognizer.GetText(), true);
+            if(active_saying != null) lock(active_saying) {
+                    while(!useVoiceRecognizerMutex.WaitOne()) { }
+                    try {
+                        if(!active_saying.final && recognizer != null) {
+                            // finalize it
+                            recognizer.Flush();
+                            active_saying.Update(recognizer.GetText(), true);
 #if DEBUG
-                        debugger.createMarker();
+                            debugger.createMarker();
 #endif
+                        }
+                    } finally {
+                        useVoiceRecognizerMutex.ReleaseMutex();
                     }
-                } finally {
-                    useVoiceRecognizerMutex.ReleaseMutex();
-                }
 
-                if(active_saying != null && active_saying.fullTxt.Length > 0) {
-                    if(past_sayings != null) {
-                        past_sayings.Add(active_saying);
+                    if(past_sayings != null) lock(past_sayings) {
+                        if(active_saying.fullTxt.Length > 0) {
+                            past_sayings.Add(active_saying);
+                        }
                     }
                 }
-            }
             active_saying = null;
         }
 
@@ -200,18 +204,23 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This should be called when there has been some silence.
         /// </summary>
         public void FlushCurrentAudio(){
-            if (ready_for_filling.Count == 0) return;
+            lock(ready_for_filling) lock(ready_for_processing) {
+                if(ready_for_filling.Count == 0) return;
 
-            AudioBuffer buff = ready_for_filling.Peek();
-            buff.readWriteMutex.WaitOne();
-            try {
-                if(buff.buffer_head > 2) {
-                    ready_for_filling.Dequeue();
-                    buff.queued = true;
-                    ready_for_processing.Enqueue(buff);
+                AudioBuffer buff;
+                if(!ready_for_filling.TryPeek(out buff)) return;
+
+                buff.readWriteMutex.WaitOne();
+                try {
+                    if(buff.buffer_head > 2) {
+                        AudioBuffer tmp;
+                        ready_for_filling.TryDequeue(out tmp);
+                        buff.queued = true;
+                        ready_for_processing.Enqueue(buff);
+                    }
+                } finally {
+                    buff.readWriteMutex.ReleaseMutex();
                 }
-            } finally {
-                buff.readWriteMutex.ReleaseMutex();
             }
         }
 
@@ -236,6 +245,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This should be called when the sesson is being destroyed.
         /// </summary>
         public void FullDispose() {
+            if(disposed) return;
+            GameUtils.LogDebug("Disposing " + audioSource.GetFriendlyName());
+
             disposed = true;
 
             while(!useVoiceRecognizerMutex.WaitOne()) { }
@@ -246,8 +258,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
             if(ui != null) ui.Dispose();
             ui = null;
-            audioBuffers = null;
-            past_sayings = null;
+
+            lock(audioBuffers) audioBuffers = null;
+            lock(ready_for_filling) ready_for_filling = null;
+            lock(ready_for_processing) ready_for_processing = null;
+
+            lock(past_sayings) past_sayings = null;
 
 #if DEBUG
             debugger.cleanup();
@@ -261,41 +277,45 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
 
         private void EnsureAdditionalBuffers() {
-            if(ready_for_filling.Count == 0) {
-                if(audioBuffers.Count >= maxAudioBuffers) return;
+            lock(ready_for_filling) {
+                if(ready_for_filling.Count == 0) {
+                    if(audioBuffers.Count >= maxAudioBuffers) return;
 
-                AudioBuffer buff = new AudioBuffer();
-                buff.lastFillTime = Utils.GetTime();
-                ready_for_filling.Enqueue(buff);
-                audioBuffers.Add(buff);
+                    AudioBuffer buff = new AudioBuffer();
+                    buff.lastFillTime = Utils.GetTime();
+                    ready_for_filling.Enqueue(buff);
+                    audioBuffers.Add(buff);
 
-                //GameUtils.Log("Allocated 1 extra buffer for " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
+                    GameUtils.LogDebug("Allocated 1 extra buffer for " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
+                }
             }
         }
 
         private float lastCleaning = 0.0f;
         private void DeleteUnnecesssaryBuffersIfNeeded() {
             if(audioBuffers.Count > 2) {
-                float time = Utils.GetTime();
+                lock(ready_for_filling) lock(audioBuffers) {
+                        float time = Utils.GetTime();
 
-                if(time - lastCleaning < 5.0) return;
-                lastCleaning = time;
+                        if(time - lastCleaning < 5.0) return;
+                        lastCleaning = time;
 
-                List<AudioBuffer> to_remove = new List<AudioBuffer>();
-                foreach(AudioBuffer buff in audioBuffers) {
-                    if(buff.queued || buff.buffer_head > 1) continue;
-                    if(!ready_for_filling.Contains(buff)) continue;
+                        List<AudioBuffer> to_remove = new List<AudioBuffer>();
+                        foreach(AudioBuffer buff in audioBuffers) {
+                            if(buff.queued || buff.buffer_head > 1) continue;
+                            if(!ready_for_filling.Contains(buff)) continue;
 
-                    if((time - buff.lastFillTime) > 10.0) {
-                        to_remove.Add(buff);
+                            if((time - buff.lastFillTime) > 10.0) {
+                                to_remove.Add(buff);
+                            }
+                        }
+
+                        audioBuffers = new List<AudioBuffer>(audioBuffers.Where(x => !to_remove.Contains(x)));
+                        ready_for_filling = new ConcurrentQueue<AudioBuffer>(ready_for_filling.Where(x => !to_remove.Contains(x)));
+
+                        if(to_remove.Count > 0)
+                            GameUtils.LogDebug("Removed " + to_remove.Count + " buffers from " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
                     }
-                }
-
-                audioBuffers = new List<AudioBuffer>(audioBuffers.Where(x => !to_remove.Contains(x)));
-                ready_for_filling = new Queue<AudioBuffer>(ready_for_filling.Where(x => !to_remove.Contains(x)));
-
-                //if(to_remove.Count > 0)
-                //    GameUtils.Log("Removed " + to_remove.Count + " buffers from " + audioSource.GetFriendlyName() + ". Total count: " + audioBuffers.Count.ToString());
             }
         }
 
@@ -309,39 +329,44 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public int EatSamples(float[] samples, int len) {
             EnsureAdditionalBuffers();
 
-            if(ready_for_filling.Count == 0) return 0;
+            lock(ready_for_filling) {
+                if(ready_for_filling.Count == 0) return 0;
 
-            AudioBuffer buff = ready_for_filling.Peek();
+                AudioBuffer buff;
+                if(!ready_for_filling.TryPeek(out buff)) return -2;
 
-            if(!buff.readWriteMutex.WaitOne(1)) return -1;
-            try {
-                last_activity = Utils.GetTime();
-                if(buff.buffer_head == AudioBuffer.buffer_size) return 0;
+                if(!buff.readWriteMutex.WaitOne(1)) return -1;
+                try {
+                    last_activity = Utils.GetTime();
+                    if(buff.buffer_head == AudioBuffer.buffer_size) return 0;
 
-                for(int i = 0; i < len; i++) {
-                    if((buff.buffer_head + i) >= AudioBuffer.buffer_size) {
-                        buff.buffer_head = AudioBuffer.buffer_size;
-                        return i;
-                    }
+                    for(int i = 0; i < len; i++) {
+                        if((buff.buffer_head + i) >= AudioBuffer.buffer_size) {
+                            buff.buffer_head = AudioBuffer.buffer_size;
+                            return i;
+                        }
 
 #if USE_SHORT
-                    buff.buffer[buff.buffer_head + i] = (short)(samples[i] * 32768.0f);
+                        buff.buffer[buff.buffer_head + i] = (short)(samples[i] * 32768.0f);
 #else
                     // TODO: For some reason, vosk needs the value to be multiplied by a large number like 1024
                     buff.buffer[buff.buffer_head + i] = samples[i] * 1024.0f;
 #endif
-                }
-                buff.buffer_head = buff.buffer_head + len;
-                
-                return len;
-            } finally {
-                buff.lastFillTime = last_activity;
-                buff.readWriteMutex.ReleaseMutex();
-                
-                if(buff.ShouldBeQueued()) {
-                    ready_for_filling.Dequeue();
-                    buff.queued = true;
-                    ready_for_processing.Enqueue(buff);
+                    }
+                    buff.buffer_head = buff.buffer_head + len;
+
+                    return len;
+                } finally {
+                    buff.lastFillTime = last_activity;
+                    buff.readWriteMutex.ReleaseMutex();
+
+                    if(buff.ShouldBeQueued()) {
+                        AudioBuffer tmp;
+                        if(ready_for_filling.TryDequeue(out tmp)) {
+                            buff.queued = true;
+                            ready_for_processing.Enqueue(buff);
+                        }
+                    }
                 }
             }
         }
@@ -400,8 +425,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         private void CleanUpOldSayings() {
             float currTime = Utils.GetTime();
-            while(past_sayings.Count > 0 && (currTime - GetNonsepMaxAge(0)) > maxAge) {
-                past_sayings.RemoveAt(0);
+            lock(past_sayings) {
+                while(past_sayings.Count > 0 && (currTime - GetNonsepMaxAge(0)) > maxAge) {
+                    past_sayings.RemoveAt(0);
+                }
             }
         }
 
@@ -412,7 +439,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         private void UpdateText() {
             CleanUpOldSayings();
-            textGen.UpdateText(past_sayings, active_saying);
+            lock(past_sayings) textGen.UpdateText(past_sayings, active_saying);
         }
 
         /// <summary>

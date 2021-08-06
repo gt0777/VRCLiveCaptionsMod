@@ -157,9 +157,11 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         if(session == null) continue;
                         if(LockedFromStarting) return;
 
-                        session.RunInference();
-
-                        if((time_now - session.last_activity) > 96.0) {
+                        if(session.disposed) {
+                            GameUtils.LogDebug("Disposed session " + session.audioSource.GetFriendlyName() + ", removing...");
+                            DeleteByValue(session, false);
+                            break;
+                        } else if((time_now - session.last_activity) > 96.0) {
                             // The player is no longer speaking, remove their session if they're not
                             // whitelisted
                             if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
@@ -171,6 +173,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                             session.FlushCurrentAudio();
                             session.RunInference();
                             session.CommitSayingIfTooOld();
+                        } else {
+                            session.RunInference();
                         }
                     }
                 } catch(Exception e) {
