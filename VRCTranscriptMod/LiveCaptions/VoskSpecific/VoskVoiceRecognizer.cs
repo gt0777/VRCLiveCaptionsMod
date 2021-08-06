@@ -253,9 +253,30 @@ namespace VRCLiveCaptionsMod.LiveCaptions.VoskSpecific {
             if(_vosk == null) throw new System.InvalidOperationException("The Init(int) method was not called..");
         }
 
+#if LOG_COUNTS
+        public static int count = 0;
+        public static object count_lock = new object();
+#endif
+
         public VoskVoiceRecognizer(Model model) {
             _model = model;
+
+#if LOG_COUNTS
+            lock(count_lock) {
+                count++;
+                GameUtils.LogDebug("New Vosk voice recognizer. Total count: " + count.ToString());
+            }
+#endif
         }
+
+#if LOG_COUNTS
+        ~VoskVoiceRecognizer() {
+            lock(count_lock) {
+                count--;
+                GameUtils.LogDebug("Destroy Vosk voice recognizer. Total count: " + count.ToString());
+            }
+        }
+#endif
 
         public void Flush() {
             ensure_state();

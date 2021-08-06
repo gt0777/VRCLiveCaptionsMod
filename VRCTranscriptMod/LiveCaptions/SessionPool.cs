@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
@@ -26,11 +27,32 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public int samplerate { get; private set; }
 
+#if LOG_COUNTS
+        public static int count = 0;
+        public static object count_lock = new object();
+#endif
+
         public SessionPool(int samplerate = 48000) {
             this.samplerate = samplerate;
 
             GameUtils.GetProvider().AudioSourceRemoved += OnPlayerLeft;
+
+#if LOG_COUNTS
+            lock(count_lock) {
+                count++;
+                GameUtils.LogDebug("New pool. Total count: " + count.ToString());
+            }
+#endif
         }
+
+#if LOG_COUNTS
+        ~SessionPool() {
+            lock(count_lock) {
+                count--;
+                GameUtils.LogDebug("Destroy pool. Total count: " + count.ToString());
+            }
+        }
+#endif
 
         private void OnPlayerLeft(IAudioSource ply) {
             DeleteSession(ply);
@@ -46,7 +68,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(dispose) {
                 foreach(TranscriptSession session in sessions.Values) {
                     try {
-                        session.FullDispose();
+                        session.Dispose();
                     } catch(Exception e) {
                         GameUtils.LogError("DELETESSSIONS: " + e.ToString());
                     }
@@ -60,7 +82,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             foreach(string key in sessions.Keys) {
                 if(sessions[key] == session) {
                     if(dispose) {
-                        session.FullDispose();
+                        session.Dispose();
                     }
                     sessions.Remove(key);
                     return;
@@ -85,7 +107,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             TranscriptSession rec = sessions[uid];
 
             if(dispose) {
-                rec.FullDispose();
+                rec.Dispose();
             }
 
             sessions.Remove(uid);
@@ -135,50 +157,53 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             return sessions.Values;
         }
 
-        public bool LockedFromStarting = false;
-        private Thread bg_thread = null;
+        private bool LockedFromStarting = false;
         private Mutex RunBusyMutex = new Mutex();
+        public bool Running = false;
+        
 
-        /// <summary>
-        /// The background thread loop that calls for inference.
-        /// </summary>
         private void Run() {
-            while(true) {
-                Thread.Sleep(1);
-                while(!RunBusyMutex.WaitOne()) GameUtils.LogWarn("Unable to grab RunBusyMutex??");
-                try {
-                    if(Settings.Disabled) continue;
+            if(LockedFromStarting) return;
 
-                    float time_now = Utils.GetTime();
+            float time_now = Utils.GetTime();
 
-                    try {
-                        foreach(TranscriptSession session in GetSessions()) {
-                            if(session == null) continue;
+            Running = true;
+            try {
+                foreach(TranscriptSession session in GetSessions()) {
+                    if(session == null) continue;
+                    if(session.locked) continue;
 
-                            session.RunInference();
-
-                            if((time_now - session.last_activity) > 96.0) {
+                    session.locked = true;
+                    Task.Run(() => {
+                        try {
+                            if(session.disposed) {
+                                GameUtils.LogDebug("Disposed session " + session.audioSource.GetFriendlyName() + ", removing...");
+                                DeleteByValue(session, false);
+                            } else if((time_now - session.last_activity) > 96.0) {
                                 // The player is no longer speaking, remove their session if they're not
                                 // whitelisted
                                 if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
                                     GameUtils.LogDebug(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
                                     DeleteSession(session);
-                                    break; // collection was modified, enumeration may not resume
                                 }
                             } else if((time_now - session.last_activity) > 0.3f) {
                                 session.FlushCurrentAudio();
                                 session.RunInference();
                                 session.CommitSayingIfTooOld();
+                            } else {
+                                session.RunInference();
                             }
+                        } finally {
+                            session.locked = false;
                         }
-                    } catch(Exception e) {
-                        // we don't really care about this error
-                        if(!e.Message.Contains("Collection was modified; enumeration"))
-                            GameUtils.LogError("In Run(): " + e.ToString());
-                    }
-                } finally {
-                    RunBusyMutex.ReleaseMutex();
+                    });
                 }
+            } catch(Exception e) {
+                // we don't really care about this error
+                if(!e.Message.Contains("Collection was modified; enumeration"))
+                    GameUtils.LogError("In Run(): " + e.ToString());
+            } finally {
+                Running = false;
             }
         }
 
@@ -187,6 +212,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This updates all of the subtitle UIs.
         /// </summary>
         public void Tick() {
+            if(!Running && !LockedFromStarting) {
+                Run();
+            }
+
             try {
                 foreach(TranscriptSession session in GetSessions()) {
                     try {
@@ -204,30 +233,22 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         /// <summary>
-        /// Ensures the background thread is stopped
+        /// Ensures the background task is stopped
         /// </summary>
-        public void EnsureThreadIsStopped() {
-            while(!RunBusyMutex.WaitOne()) { }
-            try {
-                if(bg_thread != null && bg_thread.IsAlive) {
-                    bg_thread.Abort();
-                    bg_thread = null;
-                }
-            } finally {
+        public void EnsureTaskIsStopped() {
+            LockedFromStarting = true;
+            while(Running) {
+                RunBusyMutex.WaitOne();
                 RunBusyMutex.ReleaseMutex();
             }
         }
 
         /// <summary>
-        /// Ensures the background thread is running
+        /// Allows the background task to run again,
+        /// following a call to EnsureTaskIsStopped
         /// </summary>
-        public void EnsureThreadIsRunning() {
-            if(LockedFromStarting) return;
-
-            if(bg_thread == null || !bg_thread.IsAlive) {
-                bg_thread = new Thread(Run);
-                bg_thread.Start();
-            }
+        public void AllowTaskToRunAgain() {
+            LockedFromStarting = false;
         }
     }
 }
