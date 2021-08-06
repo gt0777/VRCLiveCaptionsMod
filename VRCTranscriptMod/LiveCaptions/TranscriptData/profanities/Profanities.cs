@@ -523,7 +523,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
             "perv",
             "rape",
             "sexual",
-            "bullshit"
+            "bullshit",
+            "bullshitting",
+            "sexually",
+            "fetish",
+            "sexualizing",
+            "sexualizing",
+            "bullshitter"
         };
 
         private static Dictionary<string, bool> BadWordDict = null;
