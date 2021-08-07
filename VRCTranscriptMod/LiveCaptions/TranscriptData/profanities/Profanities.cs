@@ -522,7 +522,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
             "pervert",
             "perv",
             "rape",
-            "sexual"
+            "sexual",
+            "bullshit"
         };
 
         private static Dictionary<string, bool> BadWordDict = null;
