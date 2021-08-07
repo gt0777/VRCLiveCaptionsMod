@@ -24,7 +24,7 @@ using System.Net;
 
 namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
     class UpdateChecker {
-        static string version_s = "0.1.5";
+        static string version_s = "0.1.6";
         static SemanticVersion version = SemanticVersion.Parse(version_s);
 
         private static int CompareVersions(string First, string Second) {
