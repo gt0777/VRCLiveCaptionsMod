@@ -253,7 +253,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             } finally {
                 useVoiceRecognizerMutex.ReleaseMutex();
             }
-            if(ui != null) ui.Dispose();
+
+            
+            if(ui != null) lock(ui) ui.Dispose();
             ui = null;
 
             lock(audioBuffers) audioBuffers = null;
@@ -475,8 +477,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             UpdateText();
 
-            if(ui == null) ui = new SubtitleUi(this);
-            ui.UpdateText();
+            if(ui == null && !disposed) ui = new SubtitleUi(this);
+            if(ui != null) lock(ui) ui.UpdateText();
         }
     }
 }
