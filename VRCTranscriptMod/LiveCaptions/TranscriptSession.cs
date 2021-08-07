@@ -37,7 +37,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
     /// contains a TextGenerator to generate the text from Sayings
     /// and a SubtitleUi to display the text
     /// </summary>
-    class TranscriptSession {
+    class TranscriptSession : IDisposable {
         public IAudioSource audioSource;
         private IVoiceRecognizer recognizer = null;
         private SubtitleUi ui;
@@ -240,11 +240,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public bool HasWords(){
             return active_saying != null && active_saying.fullTxt.Length > 0;
         }
-
-        /// <summary>
-        /// This should be called when the sesson is being destroyed.
-        /// </summary>
-        public void FullDispose() {
+        
+        private void DoDispose() {
             if(disposed) return;
             GameUtils.LogDebug("Disposing " + audioSource.GetFriendlyName());
 
@@ -265,9 +262,20 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
             lock(past_sayings) past_sayings = null;
 
+            audioSource = null;
+
 #if DEBUG
             debugger.cleanup();
 #endif
+        }
+
+        public void Dispose() {
+            DoDispose();
+            GC.SuppressFinalize(this);
+        }
+
+        ~TranscriptSession() {
+            DoDispose();
         }
 
         /// <summary>

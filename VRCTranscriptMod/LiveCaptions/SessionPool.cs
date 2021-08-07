@@ -27,11 +27,32 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         public int samplerate { get; private set; }
 
+#if LOG_COUNTS
+        public static int count = 0;
+        public static object count_lock = new object();
+#endif
+
         public SessionPool(int samplerate = 48000) {
             this.samplerate = samplerate;
 
             GameUtils.GetProvider().AudioSourceRemoved += OnPlayerLeft;
+
+#if LOG_COUNTS
+            lock(count_lock) {
+                count++;
+                GameUtils.LogDebug("New pool. Total count: " + count.ToString());
+            }
+#endif
         }
+
+#if LOG_COUNTS
+        ~SessionPool() {
+            lock(count_lock) {
+                count--;
+                GameUtils.LogDebug("Destroy pool. Total count: " + count.ToString());
+            }
+        }
+#endif
 
         private void OnPlayerLeft(IAudioSource ply) {
             DeleteSession(ply);
@@ -47,7 +68,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(dispose) {
                 foreach(TranscriptSession session in sessions.Values) {
                     try {
-                        session.FullDispose();
+                        session.Dispose();
                     } catch(Exception e) {
                         GameUtils.LogError("DELETESSSIONS: " + e.ToString());
                     }
@@ -61,7 +82,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             foreach(string key in sessions.Keys) {
                 if(sessions[key] == session) {
                     if(dispose) {
-                        session.FullDispose();
+                        session.Dispose();
                     }
                     sessions.Remove(key);
                     return;
@@ -86,7 +107,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             TranscriptSession rec = sessions[uid];
 
             if(dispose) {
-                rec.FullDispose();
+                rec.Dispose();
             }
 
             sessions.Remove(uid);

@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System.Threading;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
 #if USE_SHORT
 using BUFFER_TYPE = System.Int16;
@@ -38,6 +39,24 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData {
 
         public float lastFillTime = 0.0f;
 
+#if LOG_COUNTS
+        public static int count = 0;
+        public static object count_lock = new object();
+
+        public AudioBuffer() {
+            lock(count_lock) {
+                count++;
+                GameUtils.LogDebug("New buffer. Total count: " + count.ToString());
+            }
+        }
+
+        ~AudioBuffer() {
+            lock(count_lock) {
+                count--;
+                GameUtils.LogDebug("Destroy buffer. Total count: " + count.ToString());
+            }
+        }
+#endif
 
         public void StartTranscribing() {
             readWriteMutex.WaitOne();
