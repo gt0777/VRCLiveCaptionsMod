@@ -160,14 +160,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
 
         public void Dispose() {
-            if(textObj != null) {
-                textObj.SetActive(false);
-                UnityEngine.Object.Destroy(textObj);
+            if(textObj != null) { 
+                Utils.AddForDeletion(textObj);
                 textObj = null;
             }
-        }
-
-        ~SubtitleUi() {
         }
     }
 }

@@ -140,6 +140,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// This updates all of the subtitle UIs.
         /// </summary>
         public void Tick() {
+            Utils.DestroyTrash();
+
             if(VRC.SDKBase.Networking.LocalPlayer != null) {
                 localPosition = VRC.SDKBase.Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
             }

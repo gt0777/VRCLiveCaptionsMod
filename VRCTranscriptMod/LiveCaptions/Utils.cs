@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
@@ -47,6 +48,30 @@ namespace VRCLiveCaptionsMod {
                 } catch(Exception ex) {
                     GameUtils.LogError("Error while invoking delegate:\n" + ex.ToString());
                 }
+            }
+        }
+
+
+        private static List<GameObject> trash = new List<GameObject>();
+
+        /// <summary>
+        /// Thread-safe method to schedule a GameObject to be deleted
+        /// </summary>
+        /// <param name="obj">The GameObject to delete</param>
+        public static void AddForDeletion(GameObject obj) {
+            lock(trash) trash.Add(obj);
+        }
+
+        /// <summary>
+        /// Method to be called from the main thread to delete any trash pending deletion
+        /// </summary>
+        public static void DestroyTrash() {
+            lock(trash) {
+                foreach(GameObject obj in trash) {
+                    UnityEngine.Object.Destroy(obj);
+                }
+
+                trash.Clear();
             }
         }
     }
