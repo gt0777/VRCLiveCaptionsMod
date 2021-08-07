@@ -55,12 +55,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
 
         private int sample_rate;
 
+
 #if DEBUG
         private TranscriptSessionDebugger debugger;
 #endif
 
         public bool whitelisted { get; private set; } = false;
         public bool disposed { get; private set; } = false;
+        public bool locked = false;
 
         public TranscriptSession(IAudioSource src, int sample_rate) {
             last_activity = Utils.GetTime();

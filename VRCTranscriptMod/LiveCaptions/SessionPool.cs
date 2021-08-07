@@ -160,51 +160,49 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         private bool LockedFromStarting = false;
         private Mutex RunBusyMutex = new Mutex();
         public bool Running = false;
+        
 
-        /// <summary>
-        /// The background task that calls for inference.
-        /// </summary>
         private void Run() {
             if(LockedFromStarting) return;
 
-            RunBusyMutex.WaitOne();
+            float time_now = Utils.GetTime();
+
+            Running = true;
             try {
-                Running = true;
+                foreach(TranscriptSession session in GetSessions()) {
+                    if(session == null) continue;
+                    if(session.locked) continue;
 
-                float time_now = Utils.GetTime();
-
-                try {
-                    foreach(TranscriptSession session in GetSessions()) {
-                        if(session == null) continue;
-                        if(LockedFromStarting) return;
-
-                        if(session.disposed) {
-                            GameUtils.LogDebug("Disposed session " + session.audioSource.GetFriendlyName() + ", removing...");
-                            DeleteByValue(session, false);
-                            break;
-                        } else if((time_now - session.last_activity) > 96.0) {
-                            // The player is no longer speaking, remove their session if they're not
-                            // whitelisted
-                            if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
-                                GameUtils.LogDebug(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
-                                DeleteSession(session);
-                                break; // collection was modified, enumeration may not resume
+                    session.locked = true;
+                    Task.Run(() => {
+                        try {
+                            if(session.disposed) {
+                                GameUtils.LogDebug("Disposed session " + session.audioSource.GetFriendlyName() + ", removing...");
+                                DeleteByValue(session, false);
+                            } else if((time_now - session.last_activity) > 96.0) {
+                                // The player is no longer speaking, remove their session if they're not
+                                // whitelisted
+                                if(!session.whitelisted || ((time_now - session.last_activity) > 600.0)) {
+                                    GameUtils.LogDebug(session.audioSource.GetFriendlyName() + " Player is no longer speaking, remove");
+                                    DeleteSession(session);
+                                }
+                            } else if((time_now - session.last_activity) > 0.3f) {
+                                session.FlushCurrentAudio();
+                                session.RunInference();
+                                session.CommitSayingIfTooOld();
+                            } else {
+                                session.RunInference();
                             }
-                        } else if((time_now - session.last_activity) > 0.3f) {
-                            session.FlushCurrentAudio();
-                            session.RunInference();
-                            session.CommitSayingIfTooOld();
-                        } else {
-                            session.RunInference();
+                        } finally {
+                            session.locked = false;
                         }
-                    }
-                } catch(Exception e) {
-                    // we don't really care about this error
-                    if(!e.Message.Contains("Collection was modified; enumeration"))
-                        GameUtils.LogError("In Run(): " + e.ToString());
+                    });
                 }
+            } catch(Exception e) {
+                // we don't really care about this error
+                if(!e.Message.Contains("Collection was modified; enumeration"))
+                    GameUtils.LogError("In Run(): " + e.ToString());
             } finally {
-                RunBusyMutex.ReleaseMutex();
                 Running = false;
             }
         }
@@ -215,7 +213,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         /// </summary>
         public void Tick() {
             if(!Running && !LockedFromStarting) {
-                Task.Run(() => Run());
+                Run();
             }
 
             try {
