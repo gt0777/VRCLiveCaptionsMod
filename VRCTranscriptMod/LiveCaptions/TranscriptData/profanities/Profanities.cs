@@ -529,7 +529,14 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
             "fetish",
             "sexualizing",
             "sexualizing",
-            "bullshitter"
+            "bullshitter",
+            "raped",
+            "raper",
+            "rapist",
+            "shithead",
+            "shitheads",
+            "fuckhead",
+            "fuckheads"
         };
 
         private static Dictionary<string, bool> BadWordDict = null;
