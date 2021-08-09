@@ -67,17 +67,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             Vector3 remoteHeadPosition = session.audioSource.GetPosition();
             Vector3 localHeadPosition = GameUtils.GetProvider().GetLocalHeadPosition();
 
-            if(
-                // when the position isn't initialized
-                remoteHeadPositionSmooth.sqrMagnitude < 0.001f ||
-
-                // OR when the player has been teleported (over 16 units)
-                (remoteHeadPositionSmooth - remoteHeadPosition).sqrMagnitude > (16.0f*16.0f)
-            ) {
-                // don't smooth it
+            if(remoteHeadPositionSmooth.sqrMagnitude < 0.001f) {
+                // don't smooth it when position hasn't been initialized
                 remoteHeadPositionSmooth = remoteHeadPosition;
             } else {
-                remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, remoteHeadPosition, Time.deltaTime);
+                float factor = 0.25f * (remoteHeadPositionSmooth - remoteHeadPosition).sqrMagnitude + 1.0f;
+                remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, remoteHeadPosition, factor * Time.deltaTime);
             }
 
             Vector3 forwardDirection = remoteHeadPositionSmooth - localHeadPosition;
