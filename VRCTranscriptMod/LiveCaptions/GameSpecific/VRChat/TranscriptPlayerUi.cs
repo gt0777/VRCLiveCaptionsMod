@@ -33,7 +33,9 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific.VRChat {
         private static string currently_active_uid = "";
         private static void onQuickMenuOpen(VRC.Core.APIUser param_1) {
             currently_active_uid = param_1.id;
-            transcriptToggle.State = AudioSourceOverrides.IsWhitelisted(currently_active_uid);
+            var (exists, status) = AudioSourceOverrides.IsUidWhitelisted(currently_active_uid);
+
+            transcriptToggle.State = exists ? status : param_1.isFriend;
         }
 
         private static ToggleButton transcriptToggle;

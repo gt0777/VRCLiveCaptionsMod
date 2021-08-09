@@ -77,7 +77,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             if(Settings.Disabled || halted) return;
             
             float maxDistMultiplier = 1.0f;
-            if(!AudioSourceOverrides.IsWhitelisted(src.GetUID())) {
+            if(!AudioSourceOverrides.IsWhitelisted(src)) {
                 if(!Settings.AutoTranscribeWhenInRange) return;
             } else {
                 maxDistMultiplier = 2.0f;

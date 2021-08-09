@@ -40,6 +40,15 @@ namespace VRCLiveCaptionsMod.LiveCaptions.Abstract {
         /// </summary>
         /// <returns>The user-readable friendly display name</returns>
         string GetFriendlyName();
+
+        /// <summary>
+        /// Returns whether or not the audio source is important.
+        /// For example, if the audio source is a player this may be true
+        /// if the player is a friend of the local player. This is used
+        /// in the whitelist logic to caption important sources by default.
+        /// </summary>
+        /// <returns>Whether or not the audio source is important.</returns>
+        bool IsImportant();
     };
 
     /// <summary>

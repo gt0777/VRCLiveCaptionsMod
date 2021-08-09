@@ -113,7 +113,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             };
 
             if(audioSource != null)
-                whitelisted = AudioSourceOverrides.IsWhitelisted(audioSource.GetUID());
+                whitelisted = AudioSourceOverrides.IsWhitelisted(audioSource);
 
             AudioSourceOverrides.OnAddedToWhitelist += (uid) => {
                 if(audioSource == null) return;

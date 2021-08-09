@@ -59,6 +59,13 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
         public string GetUID() {
             return VRCPlayerUtils.GetUID(_ply);
         }
+
+        public bool IsImportant() {
+            if(_ply.prop_Player_0 == null) return false;
+            if(_ply.prop_Player_0.field_Private_APIUser_0 == null) return false;
+
+            return _ply.prop_Player_0.field_Private_APIUser_0.isFriend;
+        }
     }
 
     class VRChatGameProvider : IGameProvider {

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 
 namespace VRCLiveCaptionsMod.LiveCaptions {
     /// <summary>
@@ -59,12 +60,26 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         /// <summary>
-        /// Check whether or not a UID is whitelisted
+        /// Check whether or not an audio source is whitelisted
         /// </summary>
-        /// <param name="uid">The UID to check (from IAudioSource.GetUID())</param>
+        /// <param name="uid">The Audio Source to check</param>
         /// <returns>Whether or not the UID has transcription whitelisted</returns>
-        public static bool IsWhitelisted(string uid) {
-            return overrides.ContainsKey(uid) && (overrides[uid] == true);
+        public static bool IsWhitelisted(IAudioSource src) {
+            if(!overrides.ContainsKey(src.GetUID())) {
+                return src.IsImportant();
+            }
+            return (overrides[src.GetUID()] == true);
+        }
+
+        /// <summary>
+        /// Checks whether or not an UID is specifically whitelisted.
+        /// This should not be used unless it's impossible to extract IAudioSource
+        /// IsWhitelisted should be used instead in every other case
+        /// </summary>
+        /// <param name="uid">The UID to check</param>
+        /// <returns>1: whether or not this should be used in favor of importance, 2: whether or not it's whitelisted</returns>
+        public static (bool, bool) IsUidWhitelisted(string uid) {
+            return (overrides.ContainsKey(uid), overrides.ContainsKey(uid) && (overrides[uid] == true));
         }
     }
 }
