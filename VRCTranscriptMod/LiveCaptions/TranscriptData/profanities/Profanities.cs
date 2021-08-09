@@ -536,7 +536,8 @@ namespace VRCLiveCaptionsMod.LiveCaptions.TranscriptData.profanities {
             "shithead",
             "shitheads",
             "fuckhead",
-            "fuckheads"
+            "fuckheads",
+            "porno"
         };
 
         private static Dictionary<string, bool> BadWordDict = null;
