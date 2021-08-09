@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
 using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 using VRCLiveCaptionsMod.LiveCaptions.TranscriptData;
@@ -64,6 +65,26 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         public bool disposed { get; private set; } = false;
         public bool locked = false;
 
+        private void UpdateRecognizer() {
+            recognizer = null;
+            
+#if RECOGNIZER_SEP_THREAD            
+            Task.Run(() => {
+#endif
+                while (!useVoiceRecognizerMutex.WaitOne()) { }
+                try {
+                    IVoiceRecognizer tmp = GameUtils.GetVoiceRecognizer();
+                    if (tmp != null) tmp.Init(this.sample_rate);
+                    recognizer = tmp;
+                } finally {
+                    useVoiceRecognizerMutex.ReleaseMutex();
+                }
+#if RECOGNIZER_SEP_THREAD
+            });
+#endif
+
+        }
+
         public TranscriptSession(IAudioSource src, int sample_rate) {
             last_activity = Utils.GetTime();
             audioSource = src;
@@ -76,13 +97,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
             }
 
 
-            while(!useVoiceRecognizerMutex.WaitOne()) { }
-            try {
-                recognizer = GameUtils.GetVoiceRecognizer();
-                if(recognizer != null) recognizer.Init(this.sample_rate);
-            } finally {
-                useVoiceRecognizerMutex.ReleaseMutex();
-            }
+            UpdateRecognizer();
 
             VoiceRecognizerEvents.VoiceRecognizerChanged += () => {
                 if(!inferrenceMutex.WaitOne()) return;
@@ -91,13 +106,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                         CommitSaying();
                     } catch(Exception) { }
 
-                    while(!useVoiceRecognizerMutex.WaitOne()) { }
-                    try {
-                        recognizer = GameUtils.GetVoiceRecognizer();
-                        if(recognizer != null) recognizer.Init(this.sample_rate);
-                    } finally {
-                        useVoiceRecognizerMutex.ReleaseMutex();
-                    }
+                    UpdateRecognizer();
                 } finally {
                     inferrenceMutex.ReleaseMutex();
                 }
