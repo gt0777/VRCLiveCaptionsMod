@@ -71,7 +71,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
                 // don't smooth it when position hasn't been initialized
                 remoteHeadPositionSmooth = remoteHeadPosition;
             } else {
-                float factor = 0.25f * (remoteHeadPositionSmooth - remoteHeadPosition).sqrMagnitude + 1.0f;
+                float factor = 0.5f * (remoteHeadPositionSmooth - remoteHeadPosition).sqrMagnitude + 1.0f;
                 remoteHeadPositionSmooth = Vector3.Lerp(remoteHeadPositionSmooth, remoteHeadPosition, factor * Time.deltaTime);
             }
 
