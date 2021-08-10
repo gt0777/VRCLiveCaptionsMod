@@ -89,5 +89,12 @@ namespace VRCLiveCaptionsMod.LiveCaptions.Abstract {
         /// </summary>
         /// <returns>The local head position in world-space</returns>
         Vector3 GetLocalHeadPosition();
+
+        /// <summary>
+        /// Returns whether or not an Audio Source UID is important
+        /// </summary>
+        /// <param name="uid">AudioSource UID</param>
+        /// <returns>Whether or not it's important (for example, player is friend)</returns>
+        bool IsUidImportant(string uid);
     }
 }

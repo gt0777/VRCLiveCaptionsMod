@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using UnityEngine;
+using VRC.Core;
 using VRC.SDKBase;
 using VRChatUtilityKit.Utilities;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
@@ -61,10 +62,7 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
         }
 
         public bool IsImportant() {
-            if(_ply.prop_Player_0 == null) return false;
-            if(_ply.prop_Player_0.field_Private_APIUser_0 == null) return false;
-
-            return _ply.prop_Player_0.field_Private_APIUser_0.isFriend;
+            return GameUtils.GetProvider().IsUidImportant(GetUID());
         }
     }
 
@@ -120,6 +118,10 @@ namespace VRCLiveCaptionsMod.LiveCaptions.GameSpecific {
             if(Networking.LocalPlayer == null) return Vector3.zero;
 
             return Networking.LocalPlayer.GetBonePosition(HumanBodyBones.Head);
+        }
+
+        public bool IsUidImportant(string uid) {
+            return APIUser.IsFriendsWith(uid);
         }
     };
 

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using VRCLiveCaptionsMod.LiveCaptions.Abstract;
+using VRCLiveCaptionsMod.LiveCaptions.GameSpecific;
 
 namespace VRCLiveCaptionsMod.LiveCaptions {
     /// <summary>
@@ -72,14 +73,15 @@ namespace VRCLiveCaptionsMod.LiveCaptions {
         }
 
         /// <summary>
-        /// Checks whether or not an UID is specifically whitelisted.
-        /// This should not be used unless it's impossible to extract IAudioSource
-        /// IsWhitelisted should be used instead in every other case
+        /// Check whether or not an audio source UID is whitelisted
         /// </summary>
-        /// <param name="uid">The UID to check</param>
-        /// <returns>1: whether or not this should be used in favor of importance, 2: whether or not it's whitelisted</returns>
-        public static (bool, bool) IsUidWhitelisted(string uid) {
-            return (overrides.ContainsKey(uid), overrides.ContainsKey(uid) && (overrides[uid] == true));
+        /// <param name="uid">The Audio Source UID to check</param>
+        /// <returns>Whether or not the UID has transcription whitelisted</returns>
+        public static bool IsWhitelisted(string uid) {
+            if(!overrides.ContainsKey(uid)) {
+                return GameUtils.GetProvider().IsUidImportant(uid);
+            }
+            return (overrides[uid] == true);
         }
     }
 }
